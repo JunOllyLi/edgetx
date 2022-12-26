@@ -45,8 +45,18 @@ endmacro(PrintTargetReport)
 
 function(AddCompilerFlags output)
   get_property(flags DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+  set(ARGS "")
   foreach(flag ${flags})
-    set(ARGS ${ARGS} -D${flag})
+    string(FIND "${flag}" "\$<TARGET_PROPERTY" out)
+    if("${out}" EQUAL 0)
+      # TODO $<TARGET_PROPERTY:__idf_build_target,COMPILE_DEFINITIONS>
+      get_property(val TARGET __idf_build_target PROPERTY COMPILE_DEFINITIONS)
+      foreach(v ${val})
+        set(ARGS ${ARGS} -D${v})
+      endforeach()
+    else()
+      set(ARGS ${ARGS} -D${flag})
+    endif()
   endforeach()
 
   get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
@@ -88,6 +98,7 @@ function(AddHardwareDefTarget output)
 
   AddCompilerFlags(HW_DEF_ARGS)
 
+  message(STATUS ++++++++++++++++++++++++++++++++++++ ${HW_DEF_ARGS})
   set(HW_DEF_SRC ${RADIO_DIRECTORY}/src/targets/${TARGET_DIR}/hal.h)
 
   separate_arguments(flags UNIX_COMMAND ${CMAKE_CXX_FLAGS})

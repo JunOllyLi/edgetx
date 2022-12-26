@@ -82,6 +82,10 @@ uint8_t* pulsesGetModuleBuffer(uint8_t module)
   return _module_buffers[module]._buffer;
 }
 
+#if defined(INTERNAL_MODULE_ESPNOW) || defined(INTERNAL_MODULE_BT_POWERUP)
+#include "pulses_esp32.h"
+#endif
+
 ModuleState moduleState[NUM_MODULES];
 TrainerPulsesData trainerPulsesData __DMA;
 
@@ -125,9 +129,12 @@ void pulsesRestartModuleUnsafe(uint8_t module)
 }
 
 #if !defined(SIMU)
+#if !defined(PCB_MUFFIN)
 #include <FreeRTOS/include/FreeRTOS.h>
 #include <FreeRTOS/include/timers.h>
-
+#else
+#include <FreeRTOS_entry.h>
+#endif
 static void _setup_async_module_restart(void* p1, uint32_t p2)
 {
   if (!mixerTaskTryLock()) {
@@ -342,6 +349,14 @@ uint8_t getRequiredProtocol(uint8_t module)
       protocol = PROTOCOL_CHANNELS_DSMP;
       break;
       
+    case MODULE_TYPE_ESPNOW:
+      protocol = PROTOCOL_CHANNELS_ESPNOW;
+      break;
+
+    case MODULE_TYPE_BT_POWERUP:
+      protocol = PROTOCOL_CHANNELS_BT_POWERUP;
+      break;
+
     default:
       protocol = PROTOCOL_CHANNELS_NONE;
       break;

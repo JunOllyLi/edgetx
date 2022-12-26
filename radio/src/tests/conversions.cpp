@@ -211,7 +211,7 @@ TEST(Conversions, ConversionXLiteFrom23)
 }
 #endif
 
-#if defined(RADIO_X7) && (STORAGE_CONVERSIONS <= 219)
+#if (defined(PCB_MUFFIN) || defined(RADIO_X7)) && (STORAGE_CONVERSIONS <= 219)
 
 static swarnstate_t get_configured_switch_warn_mask()
 {

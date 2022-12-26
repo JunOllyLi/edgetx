@@ -865,7 +865,7 @@
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "デバイス選択"
 #define TR_DISCOVER                    "検索"
-#define TR_BUTTON_INIT                 BUTTON("初期化")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("初期化")
 #define TR_WAITING                     "待機中..."
 #define TR_RECEIVER_DELETE             "受信機を削除しますか？"
 #define TR_RECEIVER_RESET              "受信機をリセットしますか？"
@@ -882,7 +882,7 @@
 #define TR_FS_BTN                      BUTTON(TR("Custom sw", "カスタマイズ スイッチ"))
 #define TR_TOUCH_NOTFOUND              "タッチパネルは見つかりませんでした"
 #define TR_TOUCH_EXIT                  "画面をタップして終了します"
-#define TR_SET                         BUTTON("設定")
+#define TR_SET                         EDGETX_BUTTON("設定")
 #define TR_TRAINER                     "トレーナー"
 #define TR_CHANS                       "チャンネル"
 #define TR_ANTENNAPROBLEM              CENTER "送信アンテナに問題があります!!"

@@ -856,7 +856,7 @@
 #define TR_PXX2_DEFAULT                "<defecto>"
 #define TR_BT_SELECT_DEVICE            "Selecciona dispositivo"
 #define TR_DISCOVER             "Buscar"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Espera..."
 #define TR_RECEIVER_DELETE             "Borrar receptor?"
 #define TR_RECEIVER_RESET              "Reset receptor?"

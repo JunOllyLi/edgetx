@@ -306,7 +306,7 @@ TEST(Lcd, fr_chars)
 }
 #endif
 
-#if defined(PCBTARANIS) && LCD_W >= 212
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && LCD_W >= 212
 TEST(Lcd, DrawSwitch)
 {
   lcdClear();
@@ -318,7 +318,7 @@ TEST(Lcd, DrawSwitch)
 }
 #endif
 
-#if defined(PCBTARANIS) && LCD_W >= 212
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && LCD_W >= 212
 TEST(Lcd, BMPWrapping)
 {
   lcdClear();
@@ -332,7 +332,7 @@ TEST(Lcd, BMPWrapping)
 }
 #endif
 
-#if defined(PCBTARANIS) && LCD_W >= 212
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && LCD_W >= 212
 TEST(Lcd, lcdDrawHorizontalLine)
 {
   lcdClear();
@@ -345,7 +345,7 @@ TEST(Lcd, lcdDrawHorizontalLine)
 }
 #endif
 
-#if defined(PCBTARANIS) && LCD_W >= 212
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && LCD_W >= 212
 TEST(Lcd, lcdDrawVerticalLine)
 {
   lcdClear();
@@ -385,7 +385,7 @@ public:
   };
 };
 
-#if defined(PCBTARANIS) && LCD_W >= 212
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && LCD_W >= 212
 TEST(Lcd, lcdDrawBitmapLoadAndDisplay)
 {
   lcdClear();
@@ -436,7 +436,7 @@ TEST(Lcd, lcdDrawBitmapLoadAndDisplay)
 }
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
 
 void drawDiamond(int x, int y, int size)
 {

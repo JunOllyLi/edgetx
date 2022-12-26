@@ -874,13 +874,13 @@
 #define TR_SPEAKER                      INDENT "Högtalare"
 #define TR_BUZZER                       INDENT "Summer"
 #define TR_BYTES                        "byte"
-#define TR_MODULE_BIND                  BUTTON(TR("Bnd", "Bind"))
+#define TR_MODULE_BIND                  EDGETX_BUTTON(TR("Bnd", "Bind"))
 #define TR_POWERMETER_ATTN_NEEDED       "Attenuator behövs"
 #define TR_PXX2_SELECT_RX               "Välj Rx"
 #define TR_PXX2_DEFAULT                 "<default>"
 #define TR_BT_SELECT_DEVICE             "Välj enhet"
 #define TR_DISCOVER                     "Upptäck"
-#define TR_BUTTON_INIT                  BUTTON("Init")
+#define TR_BUTTON_INIT                  EDGETX_BUTTON("Init")
 #define TR_WAITING                      "Väntar..."
 #define TR_RECEIVER_DELETE              "Radera mottagare?"
 #define TR_RECEIVER_RESET               "Återställ mottagare?"
@@ -897,7 +897,7 @@
 #define TR_FS_BTN                       BUTTON(TR("Anp. bryt.", TR_FUNCTION_SWITCHES))
 #define TR_TOUCH_NOTFOUND               "Pekskärm hittas ej"
 #define TR_TOUCH_EXIT                   "Peka på skärmen för att avsluta"
-#define TR_SET                          BUTTON(TR("Def", "Ställ in"))
+#define TR_SET                          EDGETX_BUTTON(TR("Def", "Ställ in"))
 #define TR_TRAINER                      "Lärare"
 #define TR_CHANS                        "Kan"
 #define TR_ANTENNAPROBLEM               CENTER "Fel på TX-antennen"

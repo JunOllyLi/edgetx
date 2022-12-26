@@ -27,7 +27,7 @@
 #include "input_mapping.h"
 
 #define BIGSIZE       DBLSIZE
-#if defined (PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined (PCBTARANIS)
   #define LBOX_CENTERX  (LCD_W/4 + 12)
   #define RBOX_CENTERX  (3*LCD_W/4 - 13)
 #else
@@ -310,6 +310,16 @@ void displayBattVoltage()
 #define EVT_KEY_MODEL_MENU             EVT_KEY_FIRST(KEY_MODEL)
 #define EVT_KEY_GENERAL_MENU           EVT_KEY_FIRST(KEY_SYS)
 #define EVT_KEY_TELEMETRY              EVT_KEY_LONG(KEY_PAGEUP)
+#elif defined(PCB_MUFFIN)
+ #define EVT_KEY_CONTEXT_MENU           EVT_KEY_BREAK(KEY_MENU)
+  #define EVT_KEY_PREVIOUS_VIEW          EVT_KEY_BREAK(KEY_UP)
+  #define EVT_KEY_NEXT_VIEW              EVT_KEY_BREAK(KEY_DOWN)
+  #define EVT_KEY_NEXT_PAGE              EVT_KEY_BREAK(KEY_RIGHT)
+  #define EVT_KEY_PREVIOUS_PAGE          EVT_KEY_BREAK(KEY_LEFT)
+    #define EVT_KEY_GENERAL_MENU           EVT_KEY_LONG(KEY_RIGHT)
+    #define EVT_KEY_MODEL_MENU             EVT_KEY_LONG(KEY_MENU)
+  #define EVT_KEY_TELEMETRY              EVT_KEY_LONG(KEY_DOWN)
+  #define EVT_KEY_STATISTICS             EVT_KEY_LONG(KEY_UP)
 #elif defined(NAVIGATION_X7_TX12)
 #define EVT_KEY_CONTEXT_MENU           EVT_KEY_LONG(KEY_ENTER)
 #define EVT_KEY_PREVIOUS_VIEW          EVT_KEY_FIRST(KEY_PAGEUP)

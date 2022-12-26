@@ -244,7 +244,7 @@
   #define TR_OK                        "\010" "\010" "\010" TR("[OK]", "\010" "\010" "[OK]")
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TR_POPUPS_ENTER_EXIT         TR(TR_EXIT "\010" TR_ENTER, TR_EXIT "\010" "\010" "\010" "\010" TR_ENTER)
 
 #else
@@ -859,13 +859,13 @@
 #define TR_SPEAKER                     INDENT "Lautspr"
 #define TR_BUZZER                      INDENT "Summer"
 #define TR_BYTES                       "Bytes"
-#define TR_MODULE_BIND                 BUTTON(TR("Bnd","Binden"))   //9XR-Pro
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("Bnd","Binden"))   //9XR-Pro
 #define TR_POWERMETER_ATTN_NEEDED      "Dämpfungsgl. nötig"
 #define TR_PXX2_SELECT_RX              "Wähle RX"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Wähle Gerät"
 #define TR_DISCOVER                    "Suche"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Warte..."
 #define TR_RECEIVER_DELETE             "Empfänger löschen?"
 #define TR_RECEIVER_RESET              "Empfänger resetten?"

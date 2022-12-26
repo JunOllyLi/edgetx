@@ -33,7 +33,7 @@
 
 #include "board.h"
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(PCB_MUFFIN)
 #include "usbd_msc_conf.h"
 #endif
 
@@ -176,7 +176,7 @@ struct CustomFunctionsContext {
 #include "strhelpers.h"
 #include "gui.h"
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(assert)
   #define assert(x)
   #if !defined(DEBUG)
     #define printf printf_not_allowed
@@ -503,7 +503,7 @@ enum AUDIO_SOUNDS {
   AU_STICK2_MIDDLE,
   AU_STICK3_MIDDLE,
   AU_STICK4_MIDDLE,
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
   AU_POT1_MIDDLE,
   AU_POT2_MIDDLE,
 #if defined(PCBX9E)
@@ -766,8 +766,7 @@ union ReusableBuffer
     ModuleInformation internalModule;
 #endif
   } viewMain;
-
-#if !defined(SIMU)
+#if !defined(PCB_MUFFIN) && !defined(SIMU)
   // Data for the USB mass storage driver. If USB mass storage
   // runs no menu is not allowed to be displayed
   uint8_t MSC_BOT_Data[MASS_STORAGE_BUFFER_SIZE];
@@ -847,7 +846,7 @@ void varioWakeup();
 
 #define IS_IMPERIAL_ENABLE() (g_eeGeneral.imperial)
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   extern const unsigned char logo_taranis[];
 #endif
 

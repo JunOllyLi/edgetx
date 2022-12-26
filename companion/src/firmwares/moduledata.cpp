@@ -458,6 +458,8 @@ int ModuleData::getTypeFromProtocol(unsigned int protocol)
                           { PULSES_FLYSKY_AFHDS3,       MODULE_TYPE_FLYSKY_AFHDS3 },
 
                           { PULSES_LEMON_DSMP,          MODULE_TYPE_LEMON_DSMP },
+                          { PULSES_ESPNOW,              MODULE_TYPE_ESPNOW },
+                          { PULSES_BT_POWERUP,          MODULE_TYPE_BT_POWERUP },
                       };
 
   QPair<int, int>elmt;

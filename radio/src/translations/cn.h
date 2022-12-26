@@ -224,7 +224,7 @@
 #endif
 #endif
 
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
   #define TR_ENTER                     "[ENTER]"
 #elif defined(PCBNV14) || defined(PCBPL18)
   #define TR_ENTER                     "[NEXT]"
@@ -240,7 +240,7 @@
   #define TR_OK                        TR("\010" "\010" "\010" "[OK]", "\010" "\010" "\010" "\010" "\010" "[OK]")
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TR_POPUPS_ENTER_EXIT         TR(TR_EXIT "\010" TR_ENTER, TR_EXIT "\010" "\010" "\010" "\010" TR_ENTER)
 #else
   #define TR_POPUPS_ENTER_EXIT         TR_ENTER "\010" TR_EXIT
@@ -855,13 +855,13 @@
 #define TR_SPEAKER                     INDENT "扬声器"
 #define TR_BUZZER                      INDENT "蜂鸣器"
 #define TR_BYTES                       "bytes"
-#define TR_MODULE_BIND                 BUTTON(TR("对频", "对频"))
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("对频", "对频"))
 #define TR_POWERMETER_ATTN_NEEDED      "需要串联衰减器"
 #define TR_PXX2_SELECT_RX              "Select RX"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "选择设备"
 #define TR_DISCOVER                    "发现"
-#define TR_BUTTON_INIT                 BUTTON("初始化")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("初始化")
 #define TR_WAITING                     "等待..."
 #define TR_RECEIVER_DELETE             "是否删除接收机?"
 #define TR_RECEIVER_RESET              "是否复位接收机?"
@@ -878,7 +878,7 @@
 #define TR_FS_BTN                      BUTTON(TR("自定义开关", TR_FUNCTION_SWITCHES))
 #define TR_TOUCH_NOTFOUND              "未找到触摸硬件"
 #define TR_TOUCH_EXIT                  "点击屏幕退出"
-#define TR_SET                         BUTTON("设置")
+#define TR_SET                         EDGETX_BUTTON("设置")
 #define TR_TRAINER                     "教练"
 #define TR_CHANS                       "通道"
 #define TR_ANTENNAPROBLEM              CENTER "发射机天线故障!"

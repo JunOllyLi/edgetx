@@ -26,11 +26,12 @@
 
 // stack sizes should be in multiples of 8 for better alignment
 #if defined (COLORLCD)
-  #define MENUS_STACK_SIZE     (8 * 1024)
+  #define MENUS_STACK_SIZE     20000
 #else
-  #define MENUS_STACK_SIZE     2000
+  #define MENUS_STACK_SIZE     8000
 #endif
 
+#if !defined(ESP_PLATFORM)
 #if !defined(DEBUG)
 #define MIXER_STACK_SIZE       400
 #define AUDIO_STACK_SIZE       400
@@ -38,10 +39,18 @@
 #define MIXER_STACK_SIZE       512
 #define AUDIO_STACK_SIZE       512
 #endif
+#else
+#define MIXER_STACK_SIZE       8000
+#define AUDIO_STACK_SIZE       8000
+#endif
 
 #define CLI_STACK_SIZE         1024  // only consumed with CLI build option
-
-#if defined(FREE_RTOS)
+#if defined(ESP_PLATFORM)
+#define MIXER_TASK_PRIO        (tskIDLE_PRIORITY + 4)
+#define AUDIO_TASK_PRIO        (tskIDLE_PRIORITY + 3)
+#define MENUS_TASK_PRIO        (tskIDLE_PRIORITY + 1)
+#define CLI_TASK_PRIO          (tskIDLE_PRIORITY + 1)
+#elif defined(FREE_RTOS)
 #define MIXER_TASK_PRIO        (tskIDLE_PRIORITY + 4)
 #define AUDIO_TASK_PRIO        (tskIDLE_PRIORITY + 3) // Note: FreeRTOSConfig.h defines software timers as priority 2
 #define MENUS_TASK_PRIO        (tskIDLE_PRIORITY + 1)

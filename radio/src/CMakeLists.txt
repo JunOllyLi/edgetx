@@ -1,11 +1,11 @@
 include(CMakeForceCompiler)
 include(Bitmaps)
 
-set(PCB_TYPES X9LITE X9LITES X7 XLITE XLITES X9D X9D+ X9E X10 X12S NV14 PL18)
+set(PCB_TYPES MUFFIN X9LITE X9LITES X7 XLITE XLITES X9D X9D+ X9E X10 X12S NV14 PL18)
 set(RADIO_LANGUAGES CN CZ DA DE EN ES FI FR HE HU IT JP NL PL PT RU SE SK TW UA)
 set(TTS_LANGUAGES CN CZ DA DE EN ES FR HE HU IT JP NL PL PT RU SE SK UA)
 
-set(PCB "X9D+" CACHE STRING "Radio type, one of: ${PCB_TYPES}")
+set(PCB "MUFFIN" CACHE STRING "Radio type, one of: ${PCB_TYPES}")
 set_property(CACHE PCB PROPERTY STRINGS ${PCB_TYPES})
 set(TRANSLATIONS "EN" CACHE STRING "Radio language, one of: ${RADIO_LANGUAGES}")
 set_property(CACHE TRANSLATIONS PROPERTY STRINGS ${RADIO_LANGUAGES})
@@ -53,7 +53,7 @@ option(FRSKY_RELEASE "Used to build FrSky released firmware" OFF)
 option(TBS_RELEASE "Used to build TBS released firmware" OFF)
 option(IMRC_RELEASE "Used to build IMRC released firmware" OFF)
 option(HARDWARE_TRAINER_MULTI "Allow multi trainer" OFF)
-option(BOOTLOADER "Include Bootloader" ON)
+option(BOOTLOADER "Include Bootloader" OFF)
 option(FWDRIVE "Attach also firmware drive with USB" OFF)
 option(DISABLE_MCUCHECK "Disable MCU check at start" OFF)
 
@@ -63,15 +63,25 @@ else()
   option(USBJ_EX "Enable USB Joystick Extension" ON)
 endif()
 
+if(PCB STREQUAL X9D+ AND PCBREV STREQUAL 2019)
+  option(USBJ_EX "Enable USB Joystick Extension" OFF)
+else()
+  option(USBJ_EX "Enable USB Joystick Extension" ON)
+endif()
+
+if(NOT ESP_PLATFORM)
 # since we reset all default CMAKE compiler flags for firmware builds, provide an alternate way for user to specify additional flags.
 set(FIRMWARE_C_FLAGS "" CACHE STRING "Additional flags for firmware target c compiler (note: all CMAKE_C_FLAGS[_*] are ignored for firmware/bootloader).")
 set(FIRMWARE_C_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware target (Debug config) c compiler (note: CMAKE_C_FLAGS_DEBUG is ignored for firmware/bootloader).")
 set(FIRMWARE_CXX_FLAGS "" CACHE STRING "Additional flags for firmware target c++ compiler (note: all CMAKE_CXX_FLAGS[_*] are ignored for firmware/bootloader).")
 set(FIRMWARE_CXX_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware target (Debug config) c++ compiler (note: CMAKE_CXX_FLAGS_DEBUG is ignored for firmware/bootloader).")
+endif()
 
 set(THIRDPARTY_DIR thirdparty)
 set(LUA_DIR ${THIRDPARTY_DIR}/Lua/src)
+if(NOT ESP_PLATFORM)
 set(RTOS_DIR ${THIRDPARTY_DIR}/FreeRTOS)
+endif()
 set(FATFS_DIR ${THIRDPARTY_DIR}/FatFs)
 set(RADIO_BIN_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -90,6 +100,8 @@ elseif(PCB STREQUAL PL18)
   include(targets/pl18/CMakeLists.txt)
 elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL X9LITE OR PCB STREQUAL X9LITES OR PCB STREQUAL XLITE OR PCB STREQUAL XLITES)
   include(targets/taranis/CMakeLists.txt)
+elseif(PCB STREQUAL MUFFIN)
+  include(targets/muffin/CMakeLists.txt)
 else()
   message(FATAL_ERROR "Unknown PCB '${PCB}'")
 endif()
@@ -123,6 +135,9 @@ if(ARCH STREQUAL ARM)
 endif()
 
 include_directories(targets/${TARGET_DIR} ${THIRDPARTY_DIR})
+if(CPU_TYPE STREQUAL ESP32)
+include_directories(${RADIO_SRC_DIR}/targets/common/esp32)
+endif()
 
 foreach(LANGUAGE ${RADIO_LANGUAGES})
   if(TRANSLATIONS STREQUAL ${LANGUAGE})
@@ -475,6 +490,14 @@ endif()
 set(SRC ${SRC} ${FIRMWARE_SRC})
 
 ##### firmware target #####
+if(ESP_PLATFORM)
+    add_library(tx_firmware STATIC ${SRC} ${FIRMWARE_HEADERS})
+    #link_directories(/path/to/libraries/)
+    target_link_libraries(tx_firmware stdc++)
+    add_dependencies(tx_firmware ${RADIO_DEPENDENCIES} ${FIRMWARE_DEPENDENCIES})
+    set_target_properties(tx_firmware PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    target_link_libraries(tx_firmware idf::esp_adc idf::nimble_central_utils idf::lvgl_esp32_drivers idf::lvgl idf::bt idf::esp_timer idf::esp_wifi idf::driver idf::nvs_flash idf::app_update idf::sdmmc)
+else() #ESP_PLATFORM
 
 if(NATIVE_BUILD)
   message(STATUS "firmware target disabled")
@@ -521,6 +544,7 @@ if(BOOTLOADER)
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/targets/common/arm/stm32/bootloader)
   set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} bootloader)
 endif()
+endif() #ESP_PLATFORM
 
 add_definitions(-DFREE_RTOS)
 

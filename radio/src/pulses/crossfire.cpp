@@ -19,7 +19,7 @@
  * GNU General Public License for more details.
  */
 
-#if !defined(SIMU)
+#if !defined(PCB_MUFFIN) && !defined(SIMU)
 #include "stm32_exti_driver.h"
 #include "stm32_hal_ll.h"
 #endif
@@ -326,7 +326,7 @@ static void crossfireDeInit(void* ctx)
     auto drv = modulePortGetSerialDrv(mod_st->rx);
     auto ctx = modulePortGetCtx(mod_st->rx);
     if (drv && ctx && drv->setIdleCb) {
-      stm32_exti_disable(TELEMETRY_RX_FRAME_EXTI_LINE);
+      // TODO-MUFFIN stm32_exti_disable(TELEMETRY_RX_FRAME_EXTI_LINE);
     }
   }
 #endif

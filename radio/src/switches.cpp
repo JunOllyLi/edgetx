@@ -737,6 +737,7 @@ swsrc_t getMovedSwitch()
   }
 #endif
 
+#if NUM_XPOTS > 0
   // Multipos
   for (int i = 0; i < MAX_POTS; i++) {
     if (IS_POT_MULTIPOS(i)) {
@@ -750,7 +751,7 @@ swsrc_t getMovedSwitch()
       }
     }
   }
-
+#endif
   if ((tmr10ms_t)(get_tmr10ms() - s_move_last_time) > 100)
     result = 0;
 

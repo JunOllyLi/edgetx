@@ -16,6 +16,8 @@ endif()
 
 if(PCB STREQUAL X12S)
   set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_x12s.cpp)
+elseif(PCB STREQUAL MUFFIN)
+  set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_muffin.cpp)
 elseif(PCB STREQUAL X10)
   set(YAML_GEN_OUTPUT storage/yaml/yaml_datastructs_x10.cpp)
 elseif(PCB STREQUAL NV14)

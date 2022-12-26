@@ -479,7 +479,7 @@ void drawValueWithUnit(BitmapBuffer * dc, coord_t x, coord_t y, int val, uint8_t
     dc->drawNumber(x, y, val, flags & (~NO_UNIT));
   }
   else {
-    dc->drawNumber(x, y, val, flags & (~NO_UNIT), 0, nullptr, TEXT_AT_INDEX(STR_VTELEMUNIT, unit).c_str());
+    dc->drawNumber(x, y, val, flags & (~NO_UNIT), 0, nullptr, TEXT_AT_INDEX((const char **)STR_VTELEMUNIT, unit).c_str());
   }
 }
 

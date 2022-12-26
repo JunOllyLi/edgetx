@@ -22,14 +22,22 @@
 #include "lcd.h"
 #include <lvgl/lvgl.h>
 
+#if !defined(ESP_PLATFORM)
 pixel_t LCD_FIRST_FRAME_BUFFER[DISPLAY_BUFFER_SIZE] __SDRAM;
 pixel_t LCD_SECOND_FRAME_BUFFER[DISPLAY_BUFFER_SIZE] __SDRAM;
-
 BitmapBuffer lcdBuffer1(BMP_RGB565, LCD_W, LCD_H, (uint16_t *)LCD_FIRST_FRAME_BUFFER);
 BitmapBuffer lcdBuffer2(BMP_RGB565, LCD_W, LCD_H, (uint16_t *)LCD_SECOND_FRAME_BUFFER);
-
 BitmapBuffer * lcdFront = &lcdBuffer1;
 BitmapBuffer * lcd = &lcdBuffer2;
+#else
+extern uint32_t _ext_ram_bss_start;
+pixel_t *LCD_FIRST_FRAME_BUFFER;
+pixel_t *LCD_SECOND_FRAME_BUFFER;
+
+BitmapBuffer * lcdFront = NULL;
+BitmapBuffer * lcd = NULL;
+#endif
+
 
 extern BitmapBuffer * lcdFront;
 extern BitmapBuffer * lcd;
@@ -144,18 +152,18 @@ void lcdInitDisplayDriver()
 
   lv_init();
 
+#if !defined(ESP_PLATFORM)
   // Clear buffers first
-  memset(LCD_FIRST_FRAME_BUFFER, 0, sizeof(LCD_FIRST_FRAME_BUFFER));
-  memset(LCD_SECOND_FRAME_BUFFER, 0, sizeof(LCD_SECOND_FRAME_BUFFER));
+  memset(LCD_FIRST_FRAME_BUFFER, 0, DISPLAY_BUFFER_SIZE * sizeof(pixel_t));
+  memset(LCD_SECOND_FRAME_BUFFER, 0, DISPLAY_BUFFER_SIZE * sizeof(pixel_t));
+#endif
 
   // Init hardware LCD driver
   lcdInit();
   backlightInit();
-  
-  lv_disp_draw_buf_init(&disp_buf, lcdFront->getData(), lcd->getData(), LCD_W*LCD_H);
+
   lv_disp_drv_init(&disp_drv);            /*Basic initialization*/
 
-  disp_drv.draw_buf = &disp_buf;          /*Set an initialized buffer*/
   disp_drv.flush_cb = flushLcd;           /*Set a flush callback to draw to the display*/
   disp_drv.wait_cb = lcd_wait_cb;         /*Set a wait callback*/
 
@@ -172,7 +180,15 @@ void lcdInitDisplayDriver()
   // Register the driver and save the created display object
   disp = lv_disp_drv_register(&disp_drv);
 
-  // remove all styles on default screen (makes it transparent as well)
+  lv_disp_set_default(disp);
+#if defined(ESP_PLATFORM)
+  lcdFront = new BitmapBuffer(BMP_RGB565, LCD_W, LCD_H);
+  lcd = new BitmapBuffer(BMP_RGB565, LCD_W, LCD_H);
+#endif
+  lv_disp_draw_buf_init(&disp_buf, lcdFront->getData(), lcd->getData(), LCD_W*LCD_H);
+  disp_drv.draw_buf = &disp_buf;          /*Set an initialized buffer*/
+
+    // remove all styles on default screen (makes it transparent as well)
   lv_obj_remove_style_all(lv_scr_act());
 
   // transparent background:

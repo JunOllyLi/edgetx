@@ -27,7 +27,7 @@
   #include "telemetry/crossfire.h"
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
 enum {
   ITEM_RADIO_HARDWARE_LABEL_STICKS,
   ITEM_RADIO_HARDWARE_STICK1,
@@ -361,7 +361,7 @@ void menuRadioHardware(event_t event)
     switch(k) {
       case ITEM_RADIO_HARDWARE_LABEL_STICKS:
         lcdDrawTextAlignedLeft(y, STR_STICKS);
-        lcdDrawText(HW_SETTINGS_COLUMN2, y, BUTTON(TR_CALIBRATION), attr);
+        lcdDrawText(HW_SETTINGS_COLUMN2, y, EDGETX_BUTTON(TR_CALIBRATION), attr);
         if (attr && event == EVT_KEY_FIRST(KEY_ENTER)) {
           pushMenu(menuRadioCalibration);
         }
@@ -493,7 +493,7 @@ void menuRadioHardware(event_t event)
       }
 
       case ITEM_RADIO_HARDWARE_BATTERY_CALIB:
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
         lcdDrawTextAlignedLeft(y, STR_BATT_CALIB);
         putsVolts(HW_SETTINGS_COLUMN2, y, getBatteryVoltage(), attr|PREC2|LEFT);
 #else
@@ -537,6 +537,7 @@ void menuRadioHardware(event_t event)
                        MODULE_TYPE_MAX, attr, event, isInternalModuleSupported);
         if (g_model.moduleData[INTERNAL_MODULE].type !=
             g_eeGeneral.internalModule) {
+#if !defined(PCB_MUFFIN)
           memclear(&g_model.moduleData[INTERNAL_MODULE], sizeof(ModuleData));
           storageDirty(EE_MODEL);
           storageDirty(EE_GENERAL);
@@ -545,6 +546,7 @@ void menuRadioHardware(event_t event)
           if (isInternalModuleCrossfire() && serialGetMode(SP_VCP) ==  UART_MODE_NONE)
             serialSetMode(SP_VCP, UART_MODE_CLI);
         #endif
+#endif
         }
       } break;
 #endif
@@ -687,9 +689,9 @@ void menuRadioHardware(event_t event)
 #if defined(EEPROM)
       case ITEM_RADIO_BACKUP_EEPROM:
         if (LCD_W < 212)
-          lcdDrawText(LCD_W / 2, y, BUTTON(STR_EEBACKUP), attr | CENTERED);
+          lcdDrawText(LCD_W / 2, y, EDGETX_BUTTON(STR_EEBACKUP), attr | CENTERED);
         else
-          lcdDrawText(HW_SETTINGS_COLUMN2, y, BUTTON(STR_EEBACKUP), attr);
+          lcdDrawText(HW_SETTINGS_COLUMN2, y, EDGETX_BUTTON(STR_EEBACKUP), attr);
         if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
           s_editMode = EDIT_SELECT_FIELD;
           eepromBackup();
@@ -698,9 +700,9 @@ void menuRadioHardware(event_t event)
 
       case ITEM_RADIO_FACTORY_RESET:
         if (LCD_W < 212)
-          lcdDrawText(LCD_W / 2, y, BUTTON(STR_FACTORYRESET), attr | CENTERED);
+          lcdDrawText(LCD_W / 2, y, EDGETX_BUTTON(STR_FACTORYRESET), attr | CENTERED);
         else
-          lcdDrawText(HW_SETTINGS_COLUMN2, y, BUTTON(STR_FACTORYRESET), attr);
+          lcdDrawText(HW_SETTINGS_COLUMN2, y, EDGETX_BUTTON(STR_FACTORYRESET), attr);
         if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
           s_editMode = EDIT_SELECT_FIELD;
           POPUP_CONFIRMATION(STR_CONFIRMRESET, onFactoryResetConfirm);

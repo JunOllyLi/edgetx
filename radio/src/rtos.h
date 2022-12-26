@@ -135,14 +135,17 @@ inline void RTOS_CREATE_TASK(pthread_t &taskId, void * (*task)(void *), const ch
   {
     return (uint32_t)(simuTimerMicros() / 1000);
   }
-
 #elif defined(FREE_RTOS)
 #ifdef __cplusplus
   extern "C" {
 #endif
+#if defined(ESP_PLATFORM)
+    #include "FreeRTOS_entry.h"
+#else
     #include <FreeRTOS/include/FreeRTOS.h>
     #include <FreeRTOS/include/task.h>
     #include <FreeRTOS/include/semphr.h>
+#endif
 #ifdef __cplusplus
   }
 #endif
@@ -163,7 +166,14 @@ inline void RTOS_CREATE_TASK(pthread_t &taskId, void * (*task)(void *), const ch
   
   static inline void RTOS_START()
   {
+#ifdef ESP_PLATFORM
+    // ESP-IDF start the scheduler before starting EdgeTX
+    // and is running the EdgeTX app_main() in a thread already
+    // so delete this task to save resource
+    vTaskDelete(NULL);
+#else
     vTaskStartScheduler();
+#endif
   }
 
   static inline void RTOS_WAIT_MS(uint32_t x)
@@ -188,14 +198,41 @@ inline void RTOS_CREATE_TASK(pthread_t &taskId, void * (*task)(void *), const ch
                                        const uint32_t ulStackDepth,
                                        UBaseType_t uxPriority)
   {
+#ifndef ESP_PLATFORM
     h->rtos_handle = xTaskCreateStatic(
         pxTaskCode, name, ulStackDepth, 0, uxPriority,
         puxStackBuffer, &h->task_struct);
+#else
+    h->rtos_handle = xTaskCreateStaticPinnedToCore(
+        pxTaskCode, name, ulStackDepth, 0, uxPriority,
+        puxStackBuffer, &h->task_struct, 1);
+#endif
+  }
+
+static inline void _RTOS_CREATE_TASK_EX(RTOS_TASK_HANDLE *h,
+                                       TaskFunction_t pxTaskCode,
+                                       const char *name,
+                                       StackType_t *const puxStackBuffer,
+                                       const uint32_t ulStackDepth,
+                                       UBaseType_t uxPriority, const BaseType_t xCoreID)
+  {
+#ifndef ESP_PLATFORM
+    h->rtos_handle = xTaskCreateStatic(
+        pxTaskCode, name, ulStackDepth, 0, uxPriority,
+        puxStackBuffer, &h->task_struct);
+#else
+    h->rtos_handle = xTaskCreateStaticPinnedToCore(
+        pxTaskCode, name, ulStackDepth, 0, uxPriority,
+        puxStackBuffer, &h->task_struct, xCoreID);
+#endif
   }
 
   #define RTOS_CREATE_TASK(h,task,name,stackStruct,stackSize,prio) \
     _RTOS_CREATE_TASK(&h,task,name,stackStruct.stack,stackSize,prio)
-  
+
+  #define RTOS_CREATE_TASK_EX(h,task,name,stackStruct,stackSize,prio,core) \
+    _RTOS_CREATE_TASK_EX(&h,task,name,stackStruct.stack,stackSize,prio,core)
+
   static inline void _RTOS_CREATE_MUTEX(RTOS_MUTEX_HANDLE* h)
   {
     h->rtos_handle = xSemaphoreCreateBinaryStatic(&h->mutex_struct);

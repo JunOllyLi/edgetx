@@ -76,7 +76,7 @@
   #define TR_RETA123                   "R","E","T","A","1","3","2","4","5","L","R"
 #elif defined(PCBX9E)
   #define TR_RETA123                   "R","E","T","A","1","2","3","4","L","R","L","R"
-#elif defined(PCBTARANIS)
+#elif defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TR_RETA123                   "R","E","T","A","1","2","3","L","R"
 #else
   #define TR_RETA123                   "R","E","T","A","1","2","3"
@@ -318,7 +318,7 @@
   #define TR_OK                        TR("\010" "\010" "\010" "[OK]", "\010" "\010" "\010" "\010" "\010" "[OK]")
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TR_POPUPS_ENTER_EXIT         TR(TR_EXIT "\010" TR_ENTER, TR_EXIT "\010" "\010" "\010" "\010" TR_ENTER)
 #else
   #define TR_POPUPS_ENTER_EXIT         TR_ENTER "\010" TR_EXIT
@@ -916,29 +916,29 @@
 #define TR_SPEAKER                     INDENT "Speaker"
 #define TR_BUZZER                      INDENT "Buzzer"
 #define TR_BYTES                       "bytes"
-#define TR_MODULE_BIND                 BUTTON(TR("Bnd", "Bind"))
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("Bnd", "Bind"))
 #define TR_POWERMETER_ATTN_NEEDED      "Attenuator needed"
 #define TR_PXX2_SELECT_RX              "Select RX"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Select device"
 #define TR_DISCOVER                    "Discover"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Waiting..."
 #define TR_RECEIVER_DELETE             "Delete receiver?"
 #define TR_RECEIVER_RESET              "Reset receiver?"
 #define TR_SHARE                       "Share"
 #define TR_BIND                        "Bind"
 #define TR_REGISTER                    TR("Reg", "Register")
-#define TR_MODULE_RANGE                BUTTON(TR("Rng", "Range"))
+#define TR_MODULE_RANGE                EDGETX_BUTTON(TR("Rng", "Range"))
 #define TR_RECEIVER_OPTIONS            TR("REC. OPTIONS", "RECEIVER OPTIONS")
-#define TR_DEL_BUTTON                  BUTTON(TR("Del", "Delete"))
-#define TR_RESET_BTN                   BUTTON("Reset")
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Del", "Delete"))
+#define TR_RESET_BTN                   EDGETX_BUTTON("Reset")
 #define TR_DEBUG                       "Debug"
-#define TR_KEYS_BTN                    BUTTON("Keys")
-#define TR_ANALOGS_BTN                 BUTTON(TR("Anas", "Analogs"))
+#define TR_KEYS_BTN                    EDGETX_BUTTON("Keys")
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("Anas", "Analogs"))
 #define TR_TOUCH_NOTFOUND              "Touch hardware not found"
 #define TR_TOUCH_EXIT                  "Touch screen to exit"
-#define TR_SET                         BUTTON("Set")
+#define TR_SET                         EDGETX_BUTTON("Set")
 #define TR_TRAINER                     "Trainer"
 #define TR_CHANS                       "Chans"
 #define TR_ANTENNAPROBLEM              CENTER "TX antenna problem!"

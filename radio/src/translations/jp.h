@@ -917,29 +917,29 @@
 #define TR_SPEAKER                     INDENT "スピーカー"
 #define TR_BUZZER                      INDENT "ブザー"
 #define TR_BYTES                       "バイト"
-#define TR_MODULE_BIND                 BUTTON(TR("Bnd", "バインド"))
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("Bnd", "バインド"))
 #define TR_POWERMETER_ATTN_NEEDED      "減衰器が必要です"
 #define TR_PXX2_SELECT_RX              "受信機選択"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "デバイス選択"
 #define TR_DISCOVER                    "検索"
-#define TR_BUTTON_INIT                 BUTTON("初期化")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("初期化")
 #define TR_WAITING                     "待機中..."
 #define TR_RECEIVER_DELETE             "受信機を削除しますか？"
 #define TR_RECEIVER_RESET              "受信機をリセットしますか？"
 #define TR_SHARE                       "共有"
 #define TR_BIND                        "Bind"
 #define TR_REGISTER                    TR("Reg", "登録")
-#define TR_MODULE_RANGE                BUTTON(TR("Rng", "レンジテスト"))
+#define TR_MODULE_RANGE                EDGETX_BUTTON(TR("Rng", "レンジテスト"))
 #define TR_RECEIVER_OPTIONS            TR("REC. OPTIONS", "受信機オプション")
-#define TR_DEL_BUTTON                  BUTTON(TR("Del", "削除"))
-#define TR_RESET_BTN                   BUTTON("リセット")
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Del", "削除"))
+#define TR_RESET_BTN                   EDGETX_BUTTON("リセット")
 #define TR_DEBUG                       "デバッグ"
-#define TR_KEYS_BTN                    BUTTON("キー")
-#define TR_ANALOGS_BTN                 BUTTON(TR("Anas", "アナログ"))
+#define TR_KEYS_BTN                    EDGETX_BUTTON("キー")
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("Anas", "アナログ"))
 #define TR_TOUCH_NOTFOUND              "タッチパネルは見つかりませんでした"
 #define TR_TOUCH_EXIT                  "画面をタップして終了します"
-#define TR_SET                         BUTTON("設定")
+#define TR_SET                         EDGETX_BUTTON("設定")
 #define TR_TRAINER                     "トレーナー"
 #define TR_CHANS                       "アクセス"
 #define TR_ANTENNAPROBLEM              CENTER "送信アンテナに問題があります!!"

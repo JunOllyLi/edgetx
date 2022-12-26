@@ -24,13 +24,13 @@
 #include "timers_driver.h"
 
 RTOS_TASK_HANDLE menusTaskId;
-RTOS_DEFINE_STACK(menusTaskId, menusStack, MENUS_STACK_SIZE);
+EXT_RAM_BSS_ATTR RTOS_DEFINE_STACK(menusTaskId, menusStack, MENUS_STACK_SIZE);
 
 RTOS_TASK_HANDLE mixerTaskId;
 RTOS_DEFINE_STACK(mixerTaskId, mixerStack, MIXER_STACK_SIZE);
 
 RTOS_TASK_HANDLE audioTaskId;
-RTOS_DEFINE_STACK(audioTaskId, audioStack, AUDIO_STACK_SIZE);
+EXT_RAM_BSS_ATTR RTOS_DEFINE_STACK(audioTaskId, audioStack, AUDIO_STACK_SIZE);
 
 RTOS_MUTEX_HANDLE audioMutex;
 RTOS_MUTEX_HANDLE mixerMutex;
@@ -106,6 +106,10 @@ TASK_FUNCTION(mixerTask)
 
   mixerSchedulerInit();
   mixerSchedulerStart();
+
+#if defined(PCB_MUFFIN)
+  startPulses();
+#endif
 
   while (true) {
     int timeout = 0;
@@ -259,9 +263,13 @@ void tasksStart()
 #if defined(CLI) && !defined(SIMU)
   cliStart();
 #endif
-
+#if !defined(ESP_PLATFORM)
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "mixer", mixerStack,
                    MIXER_STACK_SIZE, MIXER_TASK_PRIO);
+#else
+  RTOS_CREATE_TASK_EX(mixerTaskId, mixerTask, "mixer", mixerStack,
+                   MIXER_STACK_SIZE, MIXER_TASK_PRIO, MIXER_TASK_CORE);
+#endif
   RTOS_CREATE_TASK(menusTaskId, menusTask, "menus", menusStack,
                    MENUS_STACK_SIZE, MENUS_TASK_PRIO);
 

@@ -27,7 +27,7 @@ void displayKeyState(uint8_t x, uint8_t y, uint8_t key)
   lcdDrawChar(x, y, t+'0', t ? INVERS : 0);
 }
 
-#if !defined(PCBTARANIS)
+#if !(defined(PCB_MUFFIN) || defined(PCBTARANIS))
 void displaySwitchState(uint8_t x, uint8_t y, uint8_t sw)
 {
   swsrc_t t = switchState(sw);

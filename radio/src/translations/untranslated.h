@@ -120,7 +120,9 @@
     "SBUS",                          \
     "XJT Lite",                      \
     "FLYSKY",                        \
-    TR("Lemon DSMP","LemonRx DSMP")
+    TR("Lemon DSMP","LemonRx DSMP"), \
+    "ESPNOW",                        \
+    "POWERUP (BT)"
 
 #define TR_INTERNAL_MODULE_PROTOCOLS   TR_EXTERNAL_MODULE_PROTOCOLS
 

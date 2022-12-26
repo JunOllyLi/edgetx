@@ -31,8 +31,12 @@ uint8_t logDelay100ms;
 static tmr10ms_t lastLogTime = 0;
 
 #if !defined(SIMU)
+#if defined(ESP_PLATFORM)
+  #include "FreeRTOS_entry.h"
+#else
 #include <FreeRTOS/include/FreeRTOS.h>
 #include <FreeRTOS/include/timers.h>
+#endif
 
 static TimerHandle_t loggingTimer = nullptr;
 static StaticTimer_t loggingTimerBuffer;
@@ -95,7 +99,7 @@ void initLoggingTimer() {                                       // called cyclic
 
 void writeHeader();
 
-#if defined(PCBFRSKY) || defined(PCBNV14)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBNV14)
   int getSwitchState(uint8_t swtch) {
     int value = getValue(MIXSRC_FIRST_SWITCH + swtch);
     return (value == 0) ? 0 : (value < 0) ? -1 : +1;
@@ -223,7 +227,7 @@ void writeHeader()
     }
   }
 
-#if defined(PCBFRSKY) || defined(PCBNV14)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBNV14)
   for (uint8_t i=1; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+1; i++) {
     const char * p = STR_VSRCRAW[i] + 2;
     size_t len = strlen(p);
@@ -353,7 +357,7 @@ void logsWrite()
         f_printf(&g_oLogFile, "%d,", calibratedAnalogs[i]);
       }
 
-#if defined(PCBFRSKY) || defined(PCBFLYSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBFLYSKY)
       for (uint8_t i=0; i<NUM_SWITCHES; i++) {
         if (SWITCH_EXISTS(i)) {
           f_printf(&g_oLogFile, "%d,", getSwitchState(i));

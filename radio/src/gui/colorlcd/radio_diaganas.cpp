@@ -140,7 +140,7 @@ class AnaCalibratedViewWindow: public Window {
         dc->drawLine(rawTouchState.x - 10, rawTouchState.y - 8 - parent->top(), rawTouchState.x + 10, rawTouchState.y + 8 - parent->top(), SOLID, 0);
         dc->drawLine(rawTouchState.x - 10, rawTouchState.y + 8 - parent->top(), rawTouchState.x + 10, rawTouchState.y - 8- parent->top(), SOLID, 0);
       }
-      #if !defined(SIMU) && !defined(PCBNV14)
+      #if !defined(SIMU) && !defined(PCBNV14) && !defined(PCB_MUFFIN)
         constexpr coord_t y1 = MENU_CONTENT_TOP + 5 * FH;
         coord_t x1 = MENUS_MARGIN_LEFT;
         x1 = dc->drawText(x1, y1, "Touch GT911 FW ver:") + 8;

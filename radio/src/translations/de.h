@@ -81,7 +81,7 @@
   #define TR_RETA123                   "S","H","G","Q","1","3","2","4","5","L","R"
 #elif defined(PCBX9E)
   #define TR_RETA123                   "S","H","G","Q","1","2","3","4","L","R","L","R"
-#elif defined(PCBTARANIS)
+#elif defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TR_RETA123                   "S","H","G","Q","1","2","3","L","R"
 #else
   #define TR_RETA123                   "S","H","G","Q","1","2","3"
@@ -325,7 +325,7 @@
   #define TR_OK                        "\010" "\010" "\010" TR("[OK]", "\010" "\010" "[OK]")
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TR_POPUPS_ENTER_EXIT         TR(TR_EXIT "\010" TR_ENTER, TR_EXIT "\010" "\010" "\010" "\010" TR_ENTER)
 
 #else
@@ -917,30 +917,30 @@
 #define TR_SPEAKER                     INDENT "Lautspr"
 #define TR_BUZZER                      INDENT "Summer"
 #define TR_BYTES                       "Bytes"
-#define TR_MODULE_BIND                 BUTTON(TR("Bnd","Binden"))   //9XR-Pro
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("Bnd","Binden"))   //9XR-Pro
 #define TR_POWERMETER_ATTN_NEEDED      "Dämpfungsgl. nötig"
 #define TR_PXX2_SELECT_RX              "Wähle RX"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Wähle Gerät"
 #define TR_DISCOVER                    "Suche"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Warte..."
 #define TR_RECEIVER_DELETE             "Empfänger löschen?"
 #define TR_RECEIVER_RESET              "Empfänger resetten?"
 #define TR_SHARE                       "Share"
 #define TR_BIND                        "Binden"
 #define TR_REGISTER             	   TR("Reg", "Register")
-#define TR_MODULE_RANGE        		   BUTTON(TR("Rng", "Reichweite"))  //9XR-Pro
+#define TR_MODULE_RANGE        		   EDGETX_BUTTON(TR("Rng", "Reichweite"))  //9XR-Pro
 #define TR_RECEIVER_OPTIONS            TR("RX OPTIONEN", "RX OPTIONEN")
-#define TR_DEL_BUTTON                  BUTTON(TR("Del", "Delete"))
-#define TR_RESET_BTN           		   BUTTON("Reset")
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Del", "Delete"))
+#define TR_RESET_BTN           		   EDGETX_BUTTON("Reset")
 #define TR_DEBUG                       "Testen"
-#define TR_KEYS_BTN                	   BUTTON(TR("SW","Schalter"))
-#define TR_ANALOGS_BTN                 BUTTON(TR("Analog","Analoge"))
+#define TR_KEYS_BTN                	   EDGETX_BUTTON(TR("SW","Schalter"))
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("Analog","Analoge"))
 #define TR_TOUCH_NOTFOUND              "Touch hardware not found"
 #define TR_TOUCH_EXIT                  "Touch screen to exit"
 #define TR_CALIBRATION                 "Kalibrieren"
-#define TR_SET                   	   BUTTON("Set")
+#define TR_SET                   	   EDGETX_BUTTON("Set")
 #define TR_TRAINER             		   "DSC Buchse PPM In/Out"
 #define TR_CHANS                       "Chans"
 #define TR_ANTENNAPROBLEM     		   CENTER "TX-Antennenproblem!"

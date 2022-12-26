@@ -82,7 +82,7 @@ void setupPulsesPPMTrainer()
 static void setupPulsesPPMModule(uint8_t module)
 {
   PpmPulsesData<pulse_duration_t>* data = nullptr;
-#if defined(PCBTARANIS) && defined(INTERNAL_MODULE_PPM)
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && defined(INTERNAL_MODULE_PPM)
   if (module == INTERNAL_MODULE) {
     data = &intmodulePulsesData.ppm;
   } else
@@ -100,7 +100,7 @@ static void setupPulsesPPMModule(uint8_t module)
   *data->ptr++ = PPM_SAFE_MARGIN * 2;
 }
 
-#if defined(PCBTARANIS) && defined(INTERNAL_MODULE_PPM)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS) && defined(INTERNAL_MODULE_PPM)
 void setupPulsesPPMInternalModule()
 {
   setupPulsesPPMModule(INTERNAL_MODULE);

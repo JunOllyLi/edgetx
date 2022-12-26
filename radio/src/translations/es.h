@@ -922,7 +922,7 @@
 #define TR_PXX2_DEFAULT                "<defecto>"
 #define TR_BT_SELECT_DEVICE            "Selecciona dispositivo"
 #define TR_DISCOVER             "Buscar"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Espera..."
 #define TR_RECEIVER_DELETE             "Borrar receptor?"
 #define TR_RECEIVER_RESET              "Reset receptor?"
@@ -931,11 +931,11 @@
 #define TR_REGISTER             TR("Reg", "Registrar")
 #define TR_MODULE_RANGE        "[Lim.]"
 #define TR_RECEIVER_OPTIONS            TR("REC. OPTIONS", "OPCIONES RECEPTOR")
-#define TR_DEL_BUTTON                  BUTTON(TR("Del", "Borrar"))
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Del", "Borrar"))
 #define TR_RESET_BTN           "[Reset]"
 #define TR_DEBUG                       "Debug"
-#define TR_KEYS_BTN                BUTTON(TR("SW","Switches"))
-#define TR_ANALOGS_BTN                 BUTTON(TR("Analog","Analogs"))
+#define TR_KEYS_BTN                EDGETX_BUTTON(TR("SW","Switches"))
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("Analog","Analogs"))
 #define TR_TOUCH_NOTFOUND              "Hardware táctil no encontrado"
 #define TR_TOUCH_EXIT                  "Tocar pantalla para salir"
 #define TR_CALIBRATION                   "Calibración"

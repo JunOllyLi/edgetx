@@ -35,6 +35,8 @@
 
 #if defined(PCBX12S)
   #include "lua/lua_exports_x12s.inc"   // this line must be after lua headers
+#elif defined(PCB_MUFFIN)
+  #include "lua/lua_exports_muffin.inc"   // this line must be after lua headers
 #elif defined(RADIO_FAMILY_T16)
   #include "lua/lua_exports_t16.inc"
 #elif defined(PCBX10)
@@ -882,13 +884,13 @@ static int luaSportTelemetryPop(lua_State * L)
   return 0;
 }
 
-#define BIT(x, index) (((x) >> index) & 0x01)
+#define BIT_IS_SET(x, index) (((x) >> index) & 0x01)
 uint8_t getDataId(uint8_t physicalId)
 {
   uint8_t result = physicalId;
-  result += (BIT(physicalId, 0) ^ BIT(physicalId, 1) ^ BIT(physicalId, 2)) << 5;
-  result += (BIT(physicalId, 2) ^ BIT(physicalId, 3) ^ BIT(physicalId, 4)) << 6;
-  result += (BIT(physicalId, 0) ^ BIT(physicalId, 2) ^ BIT(physicalId, 4)) << 7;
+  result += (BIT_IS_SET(physicalId, 0) ^ BIT_IS_SET(physicalId, 1) ^ BIT_IS_SET(physicalId, 2)) << 5;
+  result += (BIT_IS_SET(physicalId, 2) ^ BIT_IS_SET(physicalId, 3) ^ BIT_IS_SET(physicalId, 4)) << 6;
+  result += (BIT_IS_SET(physicalId, 0) ^ BIT_IS_SET(physicalId, 2) ^ BIT_IS_SET(physicalId, 4)) << 7;
   return result;
 }
 
@@ -2738,7 +2740,7 @@ const luaR_value_entry opentxConstants[] = {
   { "MIXSRC_SB", MIXSRC_SB },
   { "MIXSRC_SC", MIXSRC_SC },
   { "MIXSRC_SD", MIXSRC_SD },
-#if !defined(PCBX7) && !defined(PCBXLITE) && !defined(PCBX9LITE)
+#if !(defined(PCB_MUFFIN) || defined(PCBX7)) && !defined(PCBXLITE) && !defined(PCBX9LITE)
   { "MIXSRC_SE", MIXSRC_SE },
   { "MIXSRC_SG", MIXSRC_SG },
 #endif

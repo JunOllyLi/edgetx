@@ -96,6 +96,12 @@ extern uint32_t NV14internalModuleFwVersion;
 
 #define IS_SPEKTRUM_PROTOCOL()           (telemetryProtocol == PROTOCOL_TELEMETRY_SPEKTRUM)
 
+#if defined(INTERNAL_MODULE_ESPNOW)
+inline bool isModuleESPNOW(uint8_t idx)
+{
+  return g_model.moduleData[idx].type == MODULE_TYPE_ESPNOW;
+}
+#endif
 
 #if defined(MULTIMODULE)
 // When using packed, the pointer in here end up not being aligned, which clang and gcc complain about
@@ -104,7 +110,7 @@ struct mm_options_strings {
   static const char* const options[];
 };
 
-const uint8_t getMaxMultiOptions();
+uint8_t getMaxMultiOptions();
 
 struct mm_protocol_definition {
   uint8_t protocol;
@@ -431,6 +437,8 @@ static const int8_t maxChannelsModules_M8[] = {
   0, // MODULE_TYPE_XJT_LITE_PXX2: index NOT USED
   6, // MODULE_TYPE_FLYSKY: 14 channels for AFHDS2A, AFHDS3 special cased
   4, // MODULE_TYPE_LEMON_DSMP: 12 channels for DSMX
+  24, // MODULE_TYPE_ESPNOW
+  0, // MODULE_TYPE_BT_POWERUP
 };
 
 static_assert(MODULE_TYPE_COUNT == sizeof(maxChannelsModules_M8),
@@ -624,6 +632,9 @@ inline bool isModuleFailsafeAvailable(uint8_t moduleIdx)
 
 inline bool isModuleBindRangeAvailable(uint8_t moduleIdx)
 {
+#if defined(INTERNAL_MODULE_ESPNOW)
+  if (isModuleESPNOW(moduleIdx)) return true;
+#endif
   return isModulePXX2(moduleIdx) || isModulePXX1(moduleIdx) ||
          isModuleDSM2(moduleIdx) || isModuleMultimodule(moduleIdx) ||
          isModuleFlySky(moduleIdx) || isModuleDSMP(moduleIdx);
@@ -704,7 +715,7 @@ inline bool isBindCh9To16Allowed(uint8_t moduleIndex)
   }
 }
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS) || defined(PCBHORUS)
 inline bool isSportLineUsedByInternalModule()
 {
   return g_model.moduleData[INTERNAL_MODULE].type == MODULE_TYPE_XJT_PXX1;

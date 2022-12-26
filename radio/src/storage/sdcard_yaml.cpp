@@ -128,7 +128,12 @@ static const char * attemptLoad(const char *filename, ChecksumResult* checksum_s
 {
   YamlTreeWalker tree;
   tree.reset(get_radiodata_nodes(), (uint8_t*)&g_eeGeneral);
-  return readYamlFile(filename, YamlTreeWalker::get_parser_calls(), &tree, checksum_status);
+  const char *r = readYamlFile(filename, YamlTreeWalker::get_parser_calls(), &tree, checksum_status);
+
+  if (tree.getBitOffset() > sizeof(RadioData)*8) {
+    TRACE_ERROR("Expected %d bits but got %d bits from %s", sizeof(RadioData) * 8, tree.getBitOffset(), filename);
+  }
+  return r;
 }
 
 const char * loadRadioSettingsYaml()
@@ -361,7 +366,11 @@ const char * readModelYaml(const char * filename, uint8_t * buffer, uint32_t siz
       md->rfAlarms.critical = 42;
     }
 
-    return readYamlFile(path, YamlTreeWalker::get_parser_calls(), &tree, NULL);
+    const char * r = readYamlFile(path, YamlTreeWalker::get_parser_calls(), &tree, NULL);
+    if (tree.getBitOffset() > size*8) {
+      TRACE_ERROR("Expected %d bits but got %d bits from %s", size * 8, tree.getBitOffset(), filename);
+    }
+    return r;
 }
 
 static const char _wrongExtentionError[] = "wrong file extension";

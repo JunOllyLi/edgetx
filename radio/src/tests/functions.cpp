@@ -32,7 +32,7 @@ TEST_F(SpecialFunctionsTest, SwitchFiledSize)
   EXPECT_EQ(g_model.customFn[0].swtch, -SWSRC_LAST) << "CustomFunctionData.swtch member is too small to hold all possible values";
 }
 
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
 TEST_F(SpecialFunctionsTest, FlightReset)
 {
   g_model.customFn[0].swtch = SWSRC_SA0;

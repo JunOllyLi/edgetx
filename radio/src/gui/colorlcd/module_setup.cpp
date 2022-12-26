@@ -230,6 +230,17 @@ void ModuleWindow::updateModule()
   }
 #endif
 
+#if defined(INTERNAL_MODULE_ESPNOW)
+  if (isModuleESPNOW(moduleIdx)) {
+    if (g_model.moduleData[INTERNAL_MODULE].espnow.ch == 0) {
+      g_model.moduleData[INTERNAL_MODULE].espnow.ch = 2;
+    }
+    auto espnow_line = newLine(&grid);
+    new StaticText(espnow_line, rect_t{}, "ESPNOW Channel", 0, COLOR_THEME_PRIMARY1);
+    new NumberEdit(espnow_line, rect_t{}, 2, 14, GET_SET_DEFAULT(g_model.moduleData[INTERNAL_MODULE].espnow.ch));
+  }
+#endif
+
   // Channel Range
   auto line = newLine(&grid);
   new StaticText(line, rect_t{}, STR_CHANNELRANGE, 0, COLOR_THEME_PRIMARY1);
@@ -299,6 +310,11 @@ void ModuleWindow::updateModule()
             setMultiBindStatus(moduleIdx, MULTI_BIND_NONE);
           }
 #endif
+#if defined(INTERNAL_MODULE_ESPNOW)
+          if (isModuleESPNOW(moduleIdx)) {
+            stop_bind_espnow();
+          }
+#endif
 #if defined(AFHDS2)
           if (isModuleFlySky(moduleIdx)) resetPulsesAFHDS2();
 #endif
@@ -315,6 +331,11 @@ void ModuleWindow::updateModule()
 #if defined(MULTIMODULE)
           if (isModuleMultimodule(moduleIdx)) {
             setMultiBindStatus(moduleIdx, MULTI_BIND_INITIATED);
+          }
+#endif
+#if defined(INTERNAL_MODULE_ESPNOW)
+          if (isModuleESPNOW(moduleIdx)) {
+            init_bind_espnow();
           }
 #endif
           moduleState[moduleIdx].mode = MODULE_MODE_BIND;
@@ -338,6 +359,12 @@ void ModuleWindow::updateModule()
         if (isModuleMultimodule(moduleIdx) &&
             getMultiBindStatus(moduleIdx) == MULTI_BIND_FINISHED) {
           setMultiBindStatus(moduleIdx, MULTI_BIND_NONE);
+          moduleState[moduleIdx].mode = MODULE_MODE_NORMAL;
+          bindButton->check(false);
+        }
+#endif
+#if defined(INTERNAL_MODULE_ESPNOW)
+        if (isModuleESPNOW(moduleIdx) && !is_binding_espnow()) {
           moduleState[moduleIdx].mode = MODULE_MODE_NORMAL;
           bindButton->check(false);
         }

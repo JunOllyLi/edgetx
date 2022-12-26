@@ -196,7 +196,7 @@ void runPopupWarning(event_t event)
       break;
 
     case WARNING_TYPE_ASTERISK:
-      lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, BUTTON(TR_EXIT));
+      lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH+2, EDGETX_BUTTON(TR_EXIT));
       break;
 
     default:

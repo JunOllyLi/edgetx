@@ -960,29 +960,29 @@
 #define TR_SPEAKER                      INDENT"Högtalare"
 #define TR_BUZZER                       INDENT"Summer"
 #define TR_BYTES                        "byte"
-#define TR_MODULE_BIND                  BUTTON(TR("Bnd", "Bind"))
+#define TR_MODULE_BIND                  EDGETX_BUTTON(TR("Bnd", "Bind"))
 #define TR_POWERMETER_ATTN_NEEDED       "Attenuator behövs"
 #define TR_PXX2_SELECT_RX               "Välj Rx"
 #define TR_PXX2_DEFAULT                 "<default>"
 #define TR_BT_SELECT_DEVICE             "Välj enhet"
 #define TR_DISCOVER                     "Upptäck"
-#define TR_BUTTON_INIT                  BUTTON("Init")
+#define TR_BUTTON_INIT                  EDGETX_BUTTON("Init")
 #define TR_WAITING                      "Väntar..."
 #define TR_RECEIVER_DELETE              "Radera mottagare?"
 #define TR_RECEIVER_RESET               "Återställ mottagare?"
 #define TR_SHARE                        "Dela"
 #define TR_BIND                         "Binder"
 #define TR_REGISTER                     TR("Reg", "Registrera")
-#define TR_MODULE_RANGE                 BUTTON(TR("Tst", "Testa"))
+#define TR_MODULE_RANGE                 EDGETX_BUTTON(TR("Tst", "Testa"))
 #define TR_RECEIVER_OPTIONS             TR("RX ALTERNATIV", "MOTTAGARALTERNATIV")
-#define TR_DEL_BUTTON                   BUTTON(TR("Del", "Delete"))
-#define TR_RESET_BTN                    TR(BUTTON("Nolla"), BUTTON("Nollställ"))
+#define TR_DEL_BUTTON                   EDGETX_BUTTON(TR("Del", "Delete"))
+#define TR_RESET_BTN                    TR(EDGETX_BUTTON("Nolla"), EDGETX_BUTTON("Nollställ"))
 #define TR_DEBUG                        "Debug"
-#define TR_KEYS_BTN                     BUTTON(TR("Bryt.","Brytare"))
-#define TR_ANALOGS_BTN                  BUTTON(TR("Ana.","Analoga"))
+#define TR_KEYS_BTN                     EDGETX_BUTTON(TR("Bryt.","Brytare"))
+#define TR_ANALOGS_BTN                  EDGETX_BUTTON(TR("Ana.","Analoga"))
 #define TR_TOUCH_NOTFOUND               "Pekskärm hittas ej"
 #define TR_TOUCH_EXIT                   "Peka på skärmen för att avsluta"
-#define TR_SET                          BUTTON(TR("Def", "Ställ in"))
+#define TR_SET                          EDGETX_BUTTON(TR("Def", "Ställ in"))
 #define TR_TRAINER                      "Lärare"
 #define TR_CHANS                        "Kan"
 #define TR_ANTENNAPROBLEM               CENTER "Fel på TX-antennen"

@@ -227,7 +227,7 @@ void drawCurveRef(BitmapBuffer * dc, coord_t x, coord_t y, const CurveRef & curv
         break;
 
       case CURVE_REF_FUNC:
-        dc->drawTextAtIndex(x, y, STR_VCURVEFUNC, curve.value, flags);
+        dc->drawTextAtIndex(x, y, (const char **)STR_VCURVEFUNC, curve.value, flags);
         break;
 
       case CURVE_REF_CUSTOM:
@@ -522,7 +522,7 @@ void drawValueWithUnit(BitmapBuffer * dc, coord_t x, coord_t y, int val, uint8_t
     dc->drawNumber(x, y, val, flags & (~NO_UNIT));
   }
   else {
-    dc->drawNumber(x, y, val, flags & (~NO_UNIT), 0, nullptr, TEXT_AT_INDEX(STR_VTELEMUNIT, unit).c_str());
+    dc->drawNumber(x, y, val, flags & (~NO_UNIT), 0, nullptr, TEXT_AT_INDEX((const char **)STR_VTELEMUNIT, unit).c_str());
   }
 }
 

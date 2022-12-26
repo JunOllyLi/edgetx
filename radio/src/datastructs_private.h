@@ -30,7 +30,7 @@
 #include "globals.h"
 #include "serial.h"
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define N_TARANIS_FIELD(x)
   #define TARANIS_FIELD(x) x;
 #else
@@ -145,7 +145,7 @@ PACK(struct LogicalSwitchData {
  */
 
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define CFN_SPARE_TYPE               int32_t
 #else
   #define CFN_SPARE_TYPE               int16_t
@@ -315,7 +315,7 @@ PACK(struct FrSkyLineData {
 });
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
 PACK(struct TelemetryScriptData {
   char    file[LEN_SCRIPT_FILENAME];
   int16_t inputs[MAX_TELEM_SCRIPT_INPUTS];
@@ -326,7 +326,7 @@ PACK(struct TelemetryScriptData {
 union TelemetryScreenData_u {
   FrSkyBarData  bars[4];
   FrSkyLineData lines[4];
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   TelemetryScriptData script;
 #endif
 };
@@ -338,7 +338,7 @@ PACK(struct TelemetryScreenData {
 union TelemetryScreenData {
   FrSkyBarData  bars[4];
   FrSkyLineData lines[4];
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   TelemetryScriptData script;
 #endif
 } FUNC(select_tele_screen_data);
@@ -528,6 +528,12 @@ PACK(struct ModuleData {
     NOBACKUP(struct {
       uint8_t flags;
     } dsmp);
+#if defined(PCB_MUFFIN)
+    NOBACKUP(PACK(struct {
+      uint8_t ch;
+      uint8_t rx_mac_addr[ESP_NOW_ETH_ALEN];
+    }) espnow);
+#endif
   } NAME(mod) FUNC(select_mod_type);
 
   NOBACKUP(inline uint8_t getChannelsCount() const
@@ -600,7 +606,7 @@ PACK(struct CustomScreenData {
   #define TOPBAR_DATA
 #endif
 
-#if defined(PCBHORUS) || defined(PCBTARANIS) || defined(PCBNV14)
+#if defined(PCB_MUFFIN) || defined(PCBHORUS) || defined(PCBTARANIS) || defined(PCBNV14)
   #define SCRIPT_DATA \
     NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);
 #else
@@ -910,6 +916,12 @@ PACK(struct RadioData {
 #if defined(IMU)
   NOBACKUP(int8_t imuMax);
   NOBACKUP(int8_t imuOffset);
+#endif
+
+#if defined(PCB_MUFFIN)
+  char wifi_ssid[32];
+  char wifi_password[32];
+  char ftppass[20];
 #endif
 });
 

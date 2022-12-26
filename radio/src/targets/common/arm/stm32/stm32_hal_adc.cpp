@@ -103,7 +103,7 @@ static const stm32_hal_adc_channel ADC_MAIN_channels[] = {
     // fake channels to fill unused POT1/POT2
     {0, 0},
     {0, 0},
-#elif defined(PCBX7) || defined(PCBXLITE)
+#elif defined(PCB_MUFFIN) || defined(PCBX7) || defined(PCBXLITE)
     {ADC_CHANNEL_POT1, ADC_SAMPTIME},
     {ADC_CHANNEL_POT2, ADC_SAMPTIME},
 #if defined(RADIO_BOXER)

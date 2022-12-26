@@ -917,29 +917,29 @@
 #define TR_SPEAKER INDENT              "揚聲器"
 #define TR_BUZZER INDENT               "蜂鳴器"
 #define TR_BYTES                       "bytes"
-#define TR_MODULE_BIND                 BUTTON(TR("對頻", "對頻"))
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("對頻", "對頻"))
 #define TR_POWERMETER_ATTN_NEEDED      "需要串聯衰減器"
 #define TR_PXX2_SELECT_RX              "Select RX"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "選擇設備"
 #define TR_DISCOVER                    "發現"
-#define TR_BUTTON_INIT                 BUTTON("初始化")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("初始化")
 #define TR_WAITING                     "等待..."
 #define TR_RECEIVER_DELETE             "是否刪除接收機?"
 #define TR_RECEIVER_RESET              "是否重啟接收機?"
 #define TR_SHARE                       "分享"
 #define TR_BIND                        "對頻"
 #define TR_REGISTER                    TR("註冊", "註冊")
-#define TR_MODULE_RANGE                BUTTON(TR("測距", "測距"))
+#define TR_MODULE_RANGE                EDGETX_BUTTON(TR("測距", "測距"))
 #define TR_RECEIVER_OPTIONS            TR("選項", "接收機選項")
-#define TR_DEL_BUTTON                  BUTTON(TR("刪除", "刪除"))
-#define TR_RESET_BTN                   BUTTON("重啟")
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("刪除", "刪除"))
+#define TR_RESET_BTN                   EDGETX_BUTTON("重啟")
 #define TR_DEBUG                       "調試"
-#define TR_KEYS_BTN                    BUTTON("按鍵")
-#define TR_ANALOGS_BTN                 BUTTON(TR("類比", "類比"))
+#define TR_KEYS_BTN                    EDGETX_BUTTON("按鍵")
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("類比", "類比"))
 #define TR_TOUCH_NOTFOUND              "未找到觸摸硬件"
 #define TR_TOUCH_EXIT                  "點擊屏幕退出"
-#define TR_SET                         BUTTON("設置")
+#define TR_SET                         EDGETX_BUTTON("設置")
 #define TR_TRAINER                     "教練"
 #define TR_CHANS                       "通道"
 #define TR_ANTENNAPROBLEM               CENTER "發射機天線故障!"

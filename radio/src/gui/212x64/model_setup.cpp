@@ -1196,7 +1196,7 @@ void menuModelSetup(event_t event)
           }
           if (bluetooth.distantAddr[0]) {
             lcdDrawText(INDENT_WIDTH, y+1, bluetooth.distantAddr, TINSIZE);
-            lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, BUTTON(TR_CLEAR), attr);
+            lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, EDGETX_BUTTON(TR_CLEAR), attr);
             if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
               bluetooth.state = BLUETOOTH_STATE_CLEAR_REQUESTED;
               memclear(bluetooth.distantAddr, sizeof(bluetooth.distantAddr));
@@ -1207,7 +1207,7 @@ void menuModelSetup(event_t event)
             if (bluetooth.state < BLUETOOTH_STATE_IDLE)
               lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, STR_BUTTON_INIT, attr);
             else
-              lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, BUTTON(TR_DISCOVER), attr);
+              lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, EDGETX_BUTTON(TR_DISCOVER), attr);
             if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
               if (bluetooth.state < BLUETOOTH_STATE_IDLE) {
                 bluetooth.state = BLUETOOTH_STATE_OFF;
@@ -1729,7 +1729,7 @@ void menuModelSetup(event_t event)
       {
         uint8_t moduleIdx = CURRENT_MODULE_EDITED(k);
         lcdDrawTextAlignedLeft(y, INDENT TR_MODULE);
-        lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, BUTTON(TR_REGISTER), (menuHorizontalPosition == 0 ? attr : 0));
+        lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, EDGETX_BUTTON(TR_REGISTER), (menuHorizontalPosition == 0 ? attr : 0));
         lcdDrawText(lcdLastRightPos + 3, y, STR_MODULE_RANGE, (menuHorizontalPosition == 1 ? attr : 0));
         if (attr) {
           if (moduleState[moduleIdx].mode == MODULE_MODE_NORMAL && s_editMode > 0) {

@@ -33,6 +33,12 @@
  #include "yaml_datastructs_x10.cpp"
 #elif defined(PCBNV14)
  #include "yaml_datastructs_nv14.cpp"
+#elif defined(PCB_MUFFIN)
+ #if defined(USE_OLED_FEATHERWING)
+  #include "yaml_datastructs_muffin.cpp"
+ #else
+  #include "yaml_datastructs_muffin_colorlcd.cpp"
+ #endif
 #elif defined(PCBX7)
  #if defined(RADIO_T12)
   #include "yaml_datastructs_t12.cpp"

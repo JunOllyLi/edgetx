@@ -224,7 +224,7 @@ static void set_attr(void* ctx, char* buf, uint8_t len)
 
       // RF Module Data
       } else {
-        char cmp[15];
+        char cmp[20];
         for(int i=0; i < NUM_MODULES; i++) {
           snprintf(cmp, sizeof(cmp), MODULE_ID_STR, i);
           cmp[sizeof(cmp)-1] = '\0';

@@ -67,7 +67,7 @@ uint16_t getAnalogValue(uint8_t index);
 #if defined(JITTER_MEASURE)
 extern JitterMeter<uint16_t> rawJitter[NUM_ANALOGS];
 extern JitterMeter<uint16_t> avgJitter[NUM_ANALOGS];
-#if defined(PCBHORUS) || defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBHORUS) || defined(PCBTARANIS)
   #define JITTER_MEASURE_ACTIVE()   (menuHandlers[menuLevel] == menuRadioDiagAnalogs)
 #elif defined(CLI)
   #define JITTER_MEASURE_ACTIVE()   (1)

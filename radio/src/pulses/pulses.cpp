@@ -56,6 +56,10 @@
 #include "pulses/afhds3.h"
 #endif
 
+#if defined(INTERNAL_MODULE_ESPNOW) || defined(INTERNAL_MODULE_BT_POWERUP)
+#include "pulses_esp32.h"
+#endif
+
 uint8_t s_pulses_paused = 0;
 ModuleState moduleState[NUM_MODULES];
 InternalModulePulsesData intmodulePulsesData __DMA;
@@ -317,6 +321,14 @@ uint8_t getRequiredProtocol(uint8_t module)
       protocol = PROTOCOL_CHANNELS_DSMP;
       break;
       
+    case MODULE_TYPE_ESPNOW:
+      protocol = PROTOCOL_CHANNELS_ESPNOW;
+      break;
+
+    case MODULE_TYPE_BT_POWERUP:
+      protocol = PROTOCOL_CHANNELS_BT_POWERUP;
+      break;
+
     default:
       protocol = PROTOCOL_CHANNELS_NONE;
       break;
@@ -421,6 +433,20 @@ static void enablePulsesInternalModule(uint8_t protocol)
       break;
 #endif
 
+#if defined(INTERNAL_MODULE_ESPNOW)
+    case PROTOCOL_CHANNELS_ESPNOW:
+      internalModuleContext = EspNowDriver.init(INTERNAL_MODULE);
+      internalModuleDriver = &EspNowDriver;
+      break;
+#endif
+
+#if defined(INTERNAL_MODULE_BT_POWERUP)
+    case PROTOCOL_CHANNELS_BT_POWERUP:
+      internalModuleContext = BtPowerUPDriver.init(INTERNAL_MODULE);
+      internalModuleDriver = &BtPowerUPDriver;
+      break;
+#endif
+
     default:
       // internal module stopped, use default mixer period
       mixerSchedulerSetPeriod(INTERNAL_MODULE, 0);
@@ -447,7 +473,7 @@ bool setupPulsesInternalModule(uint8_t protocol)
       return true;
 #endif
 
-#if defined(PCBTARANIS) && defined(INTERNAL_MODULE_PPM)
+#if (defined(PCB_MUFFIN) || defined(PCBTARANIS)) && defined(INTERNAL_MODULE_PPM)
     case PROTOCOL_CHANNELS_PPM:
       setupPulsesPPMInternalModule();
       return true;
@@ -503,11 +529,13 @@ void intmoduleSendNextFrame()
 
 bool setupPulsesInternalModule()
 {
+  uint8_t prev_protocol = moduleState[INTERNAL_MODULE].protocol;
+
   uint8_t protocol = getRequiredProtocol(INTERNAL_MODULE);
 
   heartbeat |= (HEART_TIMER_PULSES << INTERNAL_MODULE);
 
-  if (moduleState[INTERNAL_MODULE].protocol != protocol) {
+  if (prev_protocol != protocol) {
     enablePulsesInternalModule(protocol);
     moduleState[INTERNAL_MODULE].protocol = protocol;
     return false;

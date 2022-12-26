@@ -38,7 +38,6 @@ Widget::Widget(const WidgetFactory* factory, Window* parent,
 {
   lv_obj_clear_flag(lvobj, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_clear_flag(lvobj, LV_OBJ_FLAG_CLICK_FOCUSABLE);
-
   if (dynamic_cast<Topbar*>(parent))
     fsAllowed = false;
   

@@ -32,8 +32,12 @@
 #endif
 
 #if !defined(SIMU)
+#if defined(ESP_PLATFORM)
+  #include "FreeRTOS_entry.h"
+#else
   #include <FreeRTOS/include/FreeRTOS.h>
   #include <FreeRTOS/include/timers.h>
+#endif
 #endif
 
 #include "spektrum.h"
@@ -329,7 +333,7 @@ void telemetryWakeup()
       audioEvent(AU_SENSOR_LOST);
     }
 
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
     if (isBadAntennaDetected()) {
       AUDIO_RAS_RED();
       POPUP_WARNING(STR_WARNING, STR_ANTENNAPROBLEM);

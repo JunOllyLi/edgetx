@@ -54,8 +54,9 @@ safetych_t safetyCh[MAX_OUTPUT_CHANNELS];
 
 // __DMA for the MSC_BOT_Data member
 union ReusableBuffer reusableBuffer __DMA;
-
+#if !defined(PCB_MUFFIN)
 uint8_t* MSC_BOT_Data = reusableBuffer.MSC_BOT_Data;
+#endif
 
 #if defined(DEBUG_LATENCY)
 uint8_t latencyToggleSwitch = 0;
@@ -695,7 +696,7 @@ static void checkRTCBattery()
   }
 }
 
-#if defined(PCBFRSKY) || defined(PCBFLYSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBFLYSKY)
 static void checkFailsafe()
 {
   for (int i=0; i<NUM_MODULES; i++) {
@@ -848,7 +849,7 @@ void checkThrottleStick()
     auto dialog =
         new FullScreenDialog(WARNING_TYPE_ALERT, TR_THROTTLE_UPPERCASE,
                              throttleNotIdle, STR_PRESS_ANY_KEY_TO_SKIP);
-    dialog->setCloseCondition([]() { return !isThrottleWarningAlertNeeded(); });
+    dialog->setCloseCondition([]() { return (!isThrottleWarningAlertNeeded() || keyDown()); });
     dialog->runForever();
     LED_ERROR_END();
   }
@@ -1704,8 +1705,9 @@ void opentxInit()
 
 #if defined(SDCARD)
   // SDCARD related stuff, only done if not unexpectedShutdown
-  if (!globalData.unexpectedShutdown) {
-
+  //if (!globalData.unexpectedShutdown) {
+  // TODO-feather: kind of strange, why not initialize SD while unexpected shutdown? The rest of the code still reads SD
+  if (1) {
     if (!sdMounted())
       sdInit();
 
@@ -1822,9 +1824,9 @@ void opentxInit()
 #endif
 
   resetBacklightTimeout();
-
+#if !defined(PCB_MUFFIN)
   startPulses();
-
+#endif
   WDG_ENABLE(WDG_DURATION);
 }
 
@@ -1835,7 +1837,11 @@ extern "C" void initialise_monitor_handles();
 #if defined(SIMU)
 void simuMain()
 #else
+#if defined(ESP_PLATFORM)
+extern "C" void app_main()
+#else
 int main()
+#endif
 #endif
 {
 #if defined(SEMIHOSTING)
@@ -1843,11 +1849,11 @@ int main()
 #endif
 
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(ESP_PLATFORM)
   /* Ensure all priority bits are assigned as preemption priority bits. */
   NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
 #endif
-
+#if defined(STM32)
   TRACE("reusableBuffer: modelSel=%d, moduleSetup=%d, calib=%d, sdManager=%d, hardwareAndSettings=%d, spectrumAnalyser=%d, usb=%d",
         sizeof(reusableBuffer.modelsel),
         sizeof(reusableBuffer.moduleSetup),
@@ -1856,7 +1862,7 @@ int main()
         sizeof(reusableBuffer.hardwareAndSettings),
         sizeof(reusableBuffer.spectrumAnalyser),
         sizeof(reusableBuffer.MSC_BOT_Data));
-
+#endif
   // G: The WDT remains active after a WDT reset -- at maximum clock speed. So it's
   // important to disable it before commencing with system initialisation (or
   // we could put a bunch more WDG_RESET()s in. But I don't like that approach

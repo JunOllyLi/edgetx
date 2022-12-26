@@ -34,7 +34,9 @@
 
 #include "board.h"
 
+#if !defined(PCB_MUFFIN)
 #include "usbd_conf.h"
+#endif
 
 #if defined(LIBOPENUI)
   #include "libopenui.h"
@@ -240,7 +242,7 @@ enum RotaryEncoderMode {
 
 #include "debug.h"
 
-#if defined(PCBFRSKY) || defined(PCBFLYSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBFLYSKY)
   #define SWSRC_THR                    SWSRC_SB2
   #define SWSRC_GEA                    SWSRC_SG2
   #define SWSRC_ID0                    SWSRC_SA0
@@ -264,7 +266,7 @@ void memswap(void * a, void * b, uint8_t size);
   #define IS_POT_AVAILABLE(x)          (IS_POT(x) && POT_CONFIG(x)!=POT_NONE)
   #define IS_POT_SLIDER_AVAILABLE(x)   (IS_POT_AVAILABLE(x) || IS_SLIDER_AVAILABLE(x))
   #define IS_MULTIPOS_CALIBRATED(cal)  (cal->count>0 && cal->count<XPOTS_MULTIPOS_COUNT)
-#elif defined(PCBX7) || defined(PCBXLITE) || defined(PCBNV14)
+#elif defined(PCB_MUFFIN) || defined(PCBX7) || defined(PCBXLITE) || defined(PCBNV14)
   #define POT_CONFIG(x)                ((g_eeGeneral.potsConfig >> (2*((x)-POT1)))&0x03)
   #define IS_POT_MULTIPOS(x)           (IS_POT(x) && POT_CONFIG(x)==POT_MULTIPOS_SWITCH)
   #define IS_POT_WITHOUT_DETENT(x)     (IS_POT(x) && POT_CONFIG(x)==POT_WITHOUT_DETENT)
@@ -329,7 +331,7 @@ struct CustomFunctionsContext {
 #include "strhelpers.h"
 #include "gui.h"
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(assert)
   #define assert(x)
   #if !defined(DEBUG)
     #define printf printf_not_allowed
@@ -369,7 +371,7 @@ inline bool SPLASH_NEEDED()
 
 #if defined(PCBHORUS)
   #define SPLASH_TIMEOUT               0 /* we use the splash duration to load stuff from the SD */
-#elif defined(PCBTARANIS)
+#elif (defined(PCB_MUFFIN) && !defined(COLORLCD)) || defined(PCBTARANIS)
   #define SPLASH_TIMEOUT               (g_eeGeneral.splashMode == -4 ? 1500 : (g_eeGeneral.splashMode <= 0 ? (400-g_eeGeneral.splashMode * 200) : (400 - g_eeGeneral.splashMode * 100)))
 #else
   #define SPLASH_TIMEOUT               (4 * 100)  // 4 seconds
@@ -402,7 +404,7 @@ extern uint8_t heartbeat;
 #include "keys.h"
 #include "pwr.h"
 
-#if defined(PCBFRSKY) || defined(PCBNV14)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBNV14)
 div_t switchInfo(int switchPosition);
 extern uint8_t potsPos[NUM_XPOTS];
 #endif
@@ -475,7 +477,7 @@ extern uint8_t flightModeTransitionLast;
   extern unsigned char *heap;
   extern int _end;
   extern int _heap_end;
-  #define availableMemory() ((unsigned int)((unsigned char *)&_heap_end - heap))
+  #define availableMemory() 1000
 #endif
 
 
@@ -500,7 +502,7 @@ void logicalSwitchesReset();
 void evalLogicalSwitches(bool isCurrentFlightmode=true);
 void logicalSwitchesCopyState(uint8_t src, uint8_t dst);
 
-#if defined(PCBFRSKY) || defined(PCBFLYSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBFLYSKY)
   void getSwitchesPosition(bool startup);
 #else
   #define getSwitchesPosition(...)
@@ -805,7 +807,7 @@ enum AUDIO_SOUNDS {
   AU_STICK2_MIDDLE,
   AU_STICK3_MIDDLE,
   AU_STICK4_MIDDLE,
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
   AU_POT1_MIDDLE,
   AU_POT2_MIDDLE,
 #if defined(PCBX9E)
@@ -956,7 +958,7 @@ union ReusableBuffer
     int16_t loVals[NUM_STICKS+NUM_POTS+NUM_SLIDERS+STORAGE_NUM_MOUSE_ANALOGS];
     int16_t hiVals[NUM_STICKS+NUM_POTS+NUM_SLIDERS+STORAGE_NUM_MOUSE_ANALOGS];
     uint8_t state;
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
     struct {
       uint8_t stepsCount;
       int16_t steps[XPOTS_MULTIPOS_COUNT];
@@ -1062,9 +1064,10 @@ union ReusableBuffer
   struct {
     ModuleInformation internalModule;
   } viewMain;
-
+#if !defined(PCB_MUFFIN)
   // Data for the USB mass storage driver. If USB mass storage runs no menu is not allowed to be displayed
   uint8_t MSC_BOT_Data[MSC_MEDIA_PACKET];
+#endif
 };
 
 extern ReusableBuffer reusableBuffer;
@@ -1140,7 +1143,7 @@ void varioWakeup();
 
 #define IS_IMPERIAL_ENABLE() (g_eeGeneral.imperial)
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   extern const unsigned char logo_taranis[];
 #endif
 

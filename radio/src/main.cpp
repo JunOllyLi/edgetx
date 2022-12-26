@@ -586,9 +586,9 @@ void perMain()
   DEBUG_TIMER_STOP(debugTimerGuiMain);
 #endif
 
-#if defined(PCBX9E) && !defined(SIMU)
+#if (defined(PCB_MUFFIN) || defined(PCBX9E)) && !defined(SIMU)
   toplcdRefreshStart();
-  setTopFirstTimer(getValue(MIXSRC_FIRST_TIMER+g_model.toplcdTimer));
+  // TODO setTopFirstTimer(getValue(MIXSRC_FIRST_TIMER+g_model.toplcdTimer));
   setTopSecondTimer(g_eeGeneral.globalTimer + sessionTimer);
   setTopRssi(TELEMETRY_RSSI());
   setTopBatteryValue(g_vbat100mV);

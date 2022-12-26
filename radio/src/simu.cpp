@@ -660,7 +660,7 @@ uint16_t anaIn(uint8_t chan)
     return opentxSim->sliders[chan]->getValue();
   else if (chan < NUM_STICKS + NUM_POTS + NUM_SLIDERS)
     return opentxSim->knobs[chan - NUM_STICKS]->getValue();
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   else if (chan == TX_RTC_VOLTAGE)
     return 800; // 2.34V
 #endif

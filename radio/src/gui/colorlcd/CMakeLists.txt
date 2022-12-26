@@ -15,11 +15,16 @@ file(GLOB LAYOUTS_SRC RELATIVE ${RADIO_SRC_DIR}/gui/colorlcd
 file(GLOB WIDGETS_SRC RELATIVE ${RADIO_SRC_DIR}/gui/colorlcd
   ${RADIO_SRC_DIR}/gui/colorlcd/widgets/*.cpp)
 
+if(ESP_PLATFORM)
+else()
+set(LCD_SRC_F lcd.cpp)
+endif()
+
 set(GUI_SRC
   ${GUI_SRC}
   str_functions.cpp
   colors.cpp
-  lcd.cpp
+  ${LCD_SRC_F}
   splash.cpp
   fonts.cpp
   curves.cpp
@@ -84,6 +89,7 @@ set(GUI_SRC
   radio_hardware.cpp
   radio_diagkeys.cpp
   radio_diaganas.cpp
+  radio_wifi.cpp
   radio_theme.cpp
   radio_calibration.cpp
   view_about.cpp
@@ -187,7 +193,10 @@ set(LIBOPENUI_SRC_DIR thirdparty/libopenui)
 set(LVGL_SRC_DIR ${LIBOPENUI_SRC_DIR}/thirdparty/lvgl/src)
 
 include(${LIBOPENUI_SRC_DIR}/src/CMakeLists.txt)
+if(ESP_PLATFORM)
+else()
 include(${LIBOPENUI_SRC_DIR}/thirdparty/CMakeLists.txt)
+endif()
 
 set(SRC ${SRC} ${LVGL_FONT_SOURCES})
 

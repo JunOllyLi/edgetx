@@ -160,7 +160,7 @@ PreflightChecks::PreflightChecks() : Page(ICON_MODEL_SETUP)
 static std::string switchWarninglabel(swsrc_t index)
 {
   auto warn_pos = g_model.switchWarningState >> (3 * index) & 0x07;
-  return TEXT_AT_INDEX(STR_VSRCRAW,
+  return TEXT_AT_INDEX((const char **)STR_VSRCRAW,
                        (index + MIXSRC_FIRST_SWITCH - MIXSRC_Rud + 1)) +
          std::string(getSwitchWarnSymbol(warn_pos));
 }
@@ -247,14 +247,14 @@ PotWarnMatrix::PotWarnMatrix(Window* parent, const rect_t& r) :
       btn_cnt++;
     }
   }
-
+#if defined(SLIDER_FIRST)
   for (int8_t i = SLIDER_FIRST; i <= SLIDER_LAST; i++) {
     if (IS_SLIDER(i)) {
       pot_idx[btn_cnt] = i - POT_FIRST;
       btn_cnt++;
     }
   }
-
+#endif
   initBtnMap(3, btn_cnt);
   update();
 
@@ -266,6 +266,7 @@ PotWarnMatrix::PotWarnMatrix(Window* parent, const rect_t& r) :
       btn_id++;
     }
   }
+#if defined(SLIDER_FIRST)
   for (int8_t i = SLIDER_FIRST; i <= SLIDER_LAST; i++) {
     if (IS_SLIDER(i)) {
       lv_btnmatrix_set_btn_ctrl(lvobj, btn_id, LV_BTNMATRIX_CTRL_RECOLOR);
@@ -273,6 +274,7 @@ PotWarnMatrix::PotWarnMatrix(Window* parent, const rect_t& r) :
       btn_id++;
     }
   }
+#endif
 
   lv_obj_set_width(lvobj, (LV_DPI_DEF * 3) / 2);
   

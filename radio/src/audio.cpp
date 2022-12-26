@@ -209,7 +209,7 @@ const char * const audioFilenames[] = {
   "midstck2",
   "midstck3",
   "midstck4",
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
   "midpot1",
   "midpot2",
 #if defined(PCBX9E)
@@ -331,7 +331,11 @@ void getSwitchAudioFile(char * filename, swsrc_t index)
   char * str = getModelAudioPath(filename);
 
   if (index <= SWSRC_LAST_SWITCH) {
+#if defined(PCB_MUFFIN)
+    div_t swinfo = div(0, 0);
+#else
     div_t swinfo = switchInfo(index);
+#endif
     *str++ = 'S';
     *str++ = getRawSwitchFromIdx(swinfo.quot);
     const char * positions[] = { "-up", "-mid", "-down" };
@@ -1117,7 +1121,7 @@ void audioEvent(unsigned int index)
       case AU_POT6_MIDDLE:
       case AU_POT7_MIDDLE:
 #endif
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
       case AU_SLIDER1_MIDDLE:
       case AU_SLIDER2_MIDDLE:
 #if defined(PCBX9E)

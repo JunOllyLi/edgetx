@@ -55,7 +55,7 @@ void menuStatisticsView(event_t event)
 #endif
       break;
 
-#if !defined(PCBTARANIS)
+#if !(defined(PCB_MUFFIN) || defined(PCBTARANIS))
     case EVT_KEY_LONG(KEY_MENU): // historical
 #endif
     case EVT_KEY_LONG(KEY_ENTER):

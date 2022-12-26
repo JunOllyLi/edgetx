@@ -75,7 +75,7 @@ class RadioKeyDiagsWindow : public Window
       // KEYS
       for (uint8_t i = KEY_START; i <= 6; i++) {
         coord_t y = 1 + FH * (i - KEY_START);
-        dc->drawTextAtIndex(KEY_COLUMN, y, STR_VKEYS, i, COLOR_THEME_PRIMARY1);
+        dc->drawTextAtIndex(KEY_COLUMN, y, (const char **)STR_VKEYS, i, COLOR_THEME_PRIMARY1);
         displayKeyState(dc, 70, y, i);
       }
 #if defined(ROTARY_ENCODER_NAVIGATION)

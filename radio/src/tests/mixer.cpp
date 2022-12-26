@@ -624,7 +624,7 @@ TEST_F(MixerTest, DelayOnSwitch)
   g_model.mixData[0].mltpx = MLTPX_ADD;
   g_model.mixData[0].srcRaw = MIXSRC_MAX;
   g_model.mixData[0].weight = 100;
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
   g_model.mixData[0].swtch = SWSRC_SA2;
   int switch_index = 0;
 #else

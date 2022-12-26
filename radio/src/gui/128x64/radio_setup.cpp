@@ -108,7 +108,7 @@ enum {
   ITEM_RADIO_SETUP_MAX
 };
 
-#if defined(FRSKY_STICKS) && !defined(PCBTARANIS)
+#if defined(FRSKY_STICKS) && !(defined(PCB_MUFFIN) || defined(PCBTARANIS))
   #define COL_TX_MODE 0
 #else
   #define COL_TX_MODE LABEL(TX_MODE)
@@ -650,13 +650,13 @@ void menuRadioSetup(event_t event)
         lcdDrawTextAlignedLeft(y, STR_MODE);
         for (uint8_t i=0; i<4; i++) {
           lcdDraw1bitBitmap(5*FW+i*(4*FW+2), y, sticks, i, 0);
-#if defined(FRSKY_STICKS) && !defined(PCBTARANIS)
+#if defined(FRSKY_STICKS) && !(defined(PCB_MUFFIN) || defined(PCBTARANIS))
           if (g_eeGeneral.stickReverse & (1<<i)) {
             lcdDrawFilledRect(5*FW+i*(4*FW+2), y, 3*FW, FH-1);
           }
 #endif
         }
-#if defined(FRSKY_STICKS) && !defined(PCBTARANIS)
+#if defined(FRSKY_STICKS) && !(defined(PCB_MUFFIN) || defined(PCBTARANIS))
         if (attr) {
           s_editMode = 0;
           CHECK_INCDEC_GENVAR(event, g_eeGeneral.stickReverse, 0, 15);

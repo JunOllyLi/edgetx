@@ -21,10 +21,14 @@
 
 #include "FreeRTOSConfig.h"
 
-#if configSUPPORT_STATIC_ALLOCATION > 0
-
+#if defined(ESP_PLATFORM)
+  #include "FreeRTOS_entry.h"
+#else
 #include <FreeRTOS/include/FreeRTOS.h>
 #include <FreeRTOS/include/task.h>
+#endif
+
+#if configSUPPORT_STATIC_ALLOCATION > 0
 
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
    implementation of vApplicationGetIdleTaskMemory() to provide the memory that is

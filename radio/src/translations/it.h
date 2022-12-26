@@ -923,7 +923,7 @@
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Seleziona dispositivo"
 #define TR_DISCOVER             "Cerca"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "In attesa..."
 #define TR_RECEIVER_DELETE             "Cancello RX?"
 #define TR_RECEIVER_RESET              "Resetto RX?"
@@ -932,11 +932,11 @@
 #define TR_REGISTER                    TR("Reg", "Registrare")
 #define TR_MODULE_RANGE                TR("[Rng]","[Range]")
 #define TR_RECEIVER_OPTIONS            TR("OPZIONI RX", "OPZIONI RICEVENTE")
-#define TR_DEL_BUTTON                  BUTTON(TR("Canc.", "Cancella"))
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Canc.", "Cancella"))
 #define TR_RESET_BTN           "[Reset]"
 #define TR_DEBUG                       "Debug"
-#define TR_KEYS_BTN                BUTTON(TR("SW", "Tasti"))
-#define TR_ANALOGS_BTN             BUTTON("Analogici")
+#define TR_KEYS_BTN                EDGETX_BUTTON(TR("SW", "Tasti"))
+#define TR_ANALOGS_BTN             EDGETX_BUTTON("Analogici")
 #define TR_TOUCH_NOTFOUND          "Schermo touch non trovato"
 #define TR_TOUCH_EXIT              "Tocca lo schermo per uscire"
 #define TR_CALIBRATION             TR("Calibraz.", "Calibrazione")

@@ -68,8 +68,8 @@ inline void lcdSetColor(uint16_t color)
 #define COLOR(index)                                                         \
   ((uint32_t)                                                                \
        lcdColorTable[unsigned(index & 0xFF) >= LCD_COLOR_COUNT               \
-                         ? DEFAULT_COLOR_INDEX                               \
-                         : ((index & 0xFF) == 0 ? COLOR_THEME_PRIMARY1_INDEX \
+                         ? (uint32_t)DEFAULT_COLOR_INDEX                               \
+                         : ((index & 0xFF) == 0 ? (uint32_t)COLOR_THEME_PRIMARY1_INDEX \
                                                 : unsigned(index & 0xFF))]   \
    << 16u)
 

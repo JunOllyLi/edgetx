@@ -919,7 +919,7 @@
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Wybierz urządzenie"
 #define TR_DISCOVER                    "Szukaj"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Czekam..."
 #define TR_RECEIVER_DELETE             "Delete receiver?"
 #define TR_RECEIVER_RESET              "Reset receiver?"
@@ -928,11 +928,11 @@
 #define TR_REGISTER                    TR("Reg", "Register")
 #define TR_MODULE_RANGE        TR("[Zas]","Zasięg")
 #define TR_RECEIVER_OPTIONS            TR("REC. OPTIONS", "RECEIVER OPTIONS")
-#define TR_DEL_BUTTON                  BUTTON(TR("Del", "Delete"))
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Del", "Delete"))
 #define TR_RESET_BTN           "[Reset]"
 #define TR_DEBUG                       "Debug"
-#define TR_KEYS_BTN                BUTTON(TR("SW","Switches"))
-#define TR_ANALOGS_BTN                 BUTTON(TR("Analog","Analogi"))
+#define TR_KEYS_BTN                EDGETX_BUTTON(TR("SW","Switches"))
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("Analog","Analogi"))
 #define TR_TOUCH_NOTFOUND              "Touch hardware not found"
 #define TR_TOUCH_EXIT                  "Touch screen to exit"
 #define TR_SET                 "[Set]"

@@ -398,6 +398,7 @@ void ModelsPageBody::selectModel(ModelCell *model)
     // store changes (if any) and load selected model
     storageFlushCurrentModel();
     storageCheck(true);
+
     memcpy(g_eeGeneral.currModelFilename, model->modelFilename,
            LEN_MODEL_FILENAME);
 

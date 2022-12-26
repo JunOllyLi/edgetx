@@ -207,7 +207,7 @@ void ModelCurvesPage::build(FormWindow * window)
 
   FlexGridLayout grid(col_dsc, row_dsc);
   
-  FormWindow::Line* line;
+  FormWindow::Line* line = NULL;
 
   bool hasFocusButton = false;
 

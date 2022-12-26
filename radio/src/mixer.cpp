@@ -356,7 +356,7 @@ getvalue_t getValue(mixsrc_t i, bool* valid)
   }
 
   // TODO : find a better define
-#if defined(PCBFRSKY) || defined(PCBFLYSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBFLYSKY)
 #if defined(FUNCTION_SWITCHES)
   else if (i >= MIXSRC_FIRST_SWITCH && i <= MIXSRC_LAST_REGULAR_SWITCH) {
     mixsrc_t sw = i - MIXSRC_FIRST_SWITCH;

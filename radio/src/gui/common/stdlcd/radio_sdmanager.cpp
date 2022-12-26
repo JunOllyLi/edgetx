@@ -209,12 +209,14 @@ void onSdManagerMenu(const char * result)
     getSelectionFullPath(lfn);
     pushMenuTextView(lfn);
   }
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#if !defined(PCB_MUFFIN)
   else if (result == STR_FLASH_BOOTLOADER) {
     getSelectionFullPath(lfn);
     BootloaderFirmwareUpdate bootloader;
     bootloader.flashFirmware(lfn, drawProgressScreen);
   }
+#endif
   else if (result == STR_FLASH_INTERNAL_MODULE) {
     getSelectionFullPath(lfn);
     FrskyDeviceFirmwareUpdate device(INTERNAL_MODULE);
@@ -351,7 +353,7 @@ void menuRadioSdManager(event_t _event)
       REFRESH_FILES();
       break;
 
-#if !defined(PCBTARANIS)
+#if !(defined(PCB_MUFFIN) || defined(PCBTARANIS))
     case EVT_KEY_FIRST(KEY_RIGHT):
 #endif
     case EVT_KEY_BREAK(KEY_ENTER):
@@ -425,11 +427,13 @@ void menuRadioSdManager(event_t _event)
             POPUP_MENU_ADD_ITEM(STR_FLASH_EXTERNAL_ELRS);
           }
 #endif
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
           if (!READ_ONLY() && !strcasecmp(ext, FIRMWARE_EXT)) {
+#if !defined(PCB_MUFFIN)
             if (isBootloader(lfn)) {
               POPUP_MENU_ADD_ITEM(STR_FLASH_BOOTLOADER);
             }
+#endif
           }
           else if (!READ_ONLY() && !strcasecmp(ext, SPORT_FIRMWARE_EXT)) {
             if (HAS_SPORT_UPDATE_CONNECTOR())

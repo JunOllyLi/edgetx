@@ -139,7 +139,7 @@ class SpecialFunctionEditPage : public Page
           else if (value == NUM_STICKS + 1)
             return std::string(STR_CHANS);
           else
-            return TEXT_AT_INDEX(STR_VSRCRAW, value);
+            return TEXT_AT_INDEX((const char **)STR_VSRCRAW, value);
           ;
         });
         break;
@@ -155,7 +155,7 @@ class SpecialFunctionEditPage : public Page
           choice->setAvailableHandler(isSourceAvailableInResetSpecialFunction);
           choice->setTextHandler([=](int32_t value) {
             if (value < FUNC_RESET_PARAM_FIRST_TELEM)
-              return TEXT_AT_INDEX(STR_VFSWRESET, value);
+              return TEXT_AT_INDEX((const char **)STR_VFSWRESET, value);
             else
               return std::string(
                   g_model.telemetrySensors[value - FUNC_RESET_PARAM_FIRST_TELEM]

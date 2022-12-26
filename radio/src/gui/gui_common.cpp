@@ -25,7 +25,7 @@
   #include "extmodule_serial_driver.h"
 #endif
 
-#if defined(PCBFRSKY) || defined(PCBFLYSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY) || defined(PCBFLYSKY)
 uint8_t switchToMix(uint8_t source)
 {
   div_t qr = div(source-1, 3);
@@ -701,7 +701,7 @@ bool isPxx2IsrmChannelsCountAllowed(int channels)
 
 bool isTrainerUsingModuleBay()
 {
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   if (TRAINER_MODE_MASTER_SBUS_EXTERNAL_MODULE <= g_model.trainerData.mode && g_model.trainerData.mode <= TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE)
     return true;
 #endif
@@ -714,6 +714,8 @@ bool isModuleUsingSport(uint8_t moduleBay, uint8_t moduleType)
     case MODULE_TYPE_NONE:
     case MODULE_TYPE_SBUS:
     case MODULE_TYPE_PPM:
+    case MODULE_TYPE_ESPNOW:
+    case MODULE_TYPE_BT_POWERUP:
     case MODULE_TYPE_DSM2:
     case MODULE_TYPE_MULTIMODULE:
     case MODULE_TYPE_ISRM_PXX2:
@@ -765,6 +767,12 @@ bool isInternalModuleSupported(int moduleType)
 #if defined(INTERNAL_MODULE_PPM)
   case MODULE_TYPE_PPM: return true;
 #endif
+#if defined(INTERNAL_MODULE_ESPNOW)
+  case MODULE_TYPE_ESPNOW: return true;
+#endif
+#if defined(INTERNAL_MODULE_BT_POWERUP)
+  case MODULE_TYPE_BT_POWERUP: return true;
+#endif
 #if defined(INTERNAL_MODULE_AFHDS2A) || defined(INTERNAL_MODULE_AFHDS3)
   case MODULE_TYPE_FLYSKY: return true;
 #endif
@@ -781,9 +789,12 @@ bool isInternalModuleAvailable(int moduleType)
 
   if (moduleType == MODULE_TYPE_NONE)
     return true;
-
+#if defined(PCB_MUFFIN)
+  return isInternalModuleSupported(moduleType);
+#else
   if (g_eeGeneral.internalModule != moduleType)
     return false;
+#endif
 
 #if defined(INTERNAL_MODULE_PXX1)
   if ((moduleType == MODULE_TYPE_XJT_PXX1) &&
@@ -931,7 +942,7 @@ bool isRfProtocolAvailable(int protocol)
     return false;
   }
 #endif
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS) || defined(PCBHORUS)
   if (protocol != MODULE_SUBTYPE_PXX1_OFF && g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_R9M_PXX1) {
     return false;
   }
@@ -945,7 +956,7 @@ bool isRfProtocolAvailable(int protocol)
 
 bool isTelemetryProtocolAvailable(int protocol)
 {
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   if (protocol == PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY &&
       hasSerialMode(UART_MODE_TELEMETRY) < 0) {
     return false;
@@ -1189,7 +1200,7 @@ const char* const mm_options_strings::options[] = {
   STR_MULTI_WBUS
 };
 
-const uint8_t getMaxMultiOptions()
+uint8_t getMaxMultiOptions()
 {
   return DIM(mm_options_strings::options);
 }

@@ -73,9 +73,22 @@ if(EdgeTX_SUPERBUILD)
     INSTALL_COMMAND  ""
     EXCLUDE_FROM_ALL TRUE
     )
+  
+  # ESP32 targets
+  ExternalProject_Add(esp32
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}
+    BINARY_DIR ${CMAKE_BINARY_DIR}/esp32
+    CMAKE_ARGS ${CMAKE_ARGS} -Wno-dev -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    CMAKE_CACHE_ARGS
+      -DCMAKE_TOOLCHAIN_FILE:FILEPATH=${CMAKE_TOOLCHAIN_FILE}  # toolchain file supplied externally
+      -DEdgeTX_SUPERBUILD:BOOL=0
+      -DNATIVE_BUILD:BOOL=0
+    INSTALL_COMMAND  ""
+    EXCLUDE_FROM_ALL TRUE
+    )
 
   add_custom_target(configure
-    DEPENDS native-configure arm-none-eabi-configure)
+    DEPENDS native-configure arm-none-eabi-configure esp32-configure)
 
   add_custom_target(libsimulator
     COMMAND $(MAKE) -C native libsimulator
@@ -110,6 +123,11 @@ if(EdgeTX_SUPERBUILD)
   add_custom_target(firmware
     COMMAND $(MAKE) -C arm-none-eabi firmware
     DEPENDS arm-none-eabi-configure
+    )
+
+  add_custom_target(tx_firmware
+    COMMAND $(MAKE) -C esp32 tx_firmware
+    DEPENDS esp32-configure
     )
 
   add_custom_target(firmware-size

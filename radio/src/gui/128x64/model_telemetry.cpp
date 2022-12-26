@@ -61,7 +61,7 @@ enum MenuModelTelemetryFrskyItems {
   #define VARIO_ROWS
 #endif
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
   #define TELEMETRY_TYPE_ROW           (!IS_INTERNAL_MODULE_ENABLED() && g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_PPM) ? (uint8_t)0 : HIDDEN_ROW
 #else
   #define TELEMETRY_TYPE_ROW           (g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_PPM) ? (uint8_t)0 : HIDDEN_ROW

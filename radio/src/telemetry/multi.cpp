@@ -277,7 +277,7 @@ static void processMultiSyncPacket(const uint8_t * data, uint8_t module)
 #endif
 }
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS) || defined(PCBHORUS)
 static void processMultiRxChannels(const uint8_t * data, uint8_t len)
 {
   if (g_model.trainerData.mode != TRAINER_MODE_MULTI)
@@ -483,7 +483,7 @@ static void processMultiTelemetryPaket(const uint8_t * packet, uint8_t module)
         TRACE("[MP] Received spectrum scanner len %d != 6", len);
       break;
 
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS) || defined(PCBHORUS)
     case MultiRxChannels:
       if (len >= 4)
         processMultiRxChannels(data, len);
@@ -508,7 +508,7 @@ static void processMultiTelemetryPaket(const uint8_t * packet, uint8_t module)
 void MultiModuleStatus::getStatusString(char * statusText) const
 {
   if (!isValid()) {
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
 #if !defined(INTERNAL_MODULE_MULTI)
     if (isSportLineUsedByInternalModule())
       strcpy(statusText, STR_DISABLE_INTERNAL);
@@ -623,7 +623,7 @@ void processMultiTelemetryData(uint8_t data, uint8_t module)
         processMultiTelemetryData(data, module);
       }
       else {
-        TRACE("[MP] invalid start byte 0x%02X", data);
+        //TRACE("[MP] invalid start byte 0x%02X", data);
       }
       break;
 
@@ -678,7 +678,7 @@ void processMultiTelemetryData(uint8_t data, uint8_t module)
         processMultiTelemetryData(data, module);
       }
       else {
-        TRACE("[MP] invalid second byte 0x%02X", data);
+        //TRACE("[MP] invalid second byte 0x%02X", data);
         setMultiTelemetryBufferState(module, NoProtocolDetected);
       }
       break;

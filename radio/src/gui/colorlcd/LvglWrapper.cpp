@@ -185,7 +185,7 @@ static void copy_touch_data_backup(lv_indev_data_t* data)
 
 extern "C" void touchDriverRead(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
-#if defined(HARDWARE_TOUCH)
+#if defined(HARDWARE_TOUCH) && !defined(ESP_PLATFORM)
   if(!touchPanelEventOccured()) {
     copy_touch_data_backup(data);
     return;
@@ -325,13 +325,13 @@ static void init_lvgl_drivers()
 {
   // Register the driver and save the created display object
   lcdInitDisplayDriver();
- 
+#if !defined(ESP_PLATFORM)
   // Register the driver in LVGL and save the created input device object
   lv_indev_drv_init(&touchDriver);          /*Basic initialization*/
   touchDriver.type = LV_INDEV_TYPE_POINTER; /*See below.*/
   touchDriver.read_cb = touchDriverRead;      /*See below.*/
   touchDevice = lv_indev_drv_register(&touchDriver);
-
+#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
   lv_indev_drv_init(&rotaryDriver);
   rotaryDriver.type = LV_INDEV_TYPE_ENCODER;

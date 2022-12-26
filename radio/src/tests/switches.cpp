@@ -32,7 +32,7 @@ void setLogicalSwitch(int index, uint16_t _func, int16_t _v1, int16_t _v2, int16
   g_model.logicalSw[index].andsw = _andsw;
 }
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
 TEST(getSwitch, OldTypeStickyCSW)
 {
   RADIO_RESET();
@@ -74,7 +74,7 @@ TEST(getSwitch, nullSW)
 }
 
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
 TEST(getSwitch, inputWithTrim)
 {
   MODEL_RESET();
@@ -95,7 +95,7 @@ TEST(getSwitch, inputWithTrim)
 }
 #endif
 
-#if defined(PCBFRSKY)
+#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
 TEST(evalLogicalSwitches, playFile)
 {
   SYSTEM_RESET();

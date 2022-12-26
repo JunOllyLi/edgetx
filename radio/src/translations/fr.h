@@ -937,29 +937,29 @@
 #define TR_SPEAKER                     INDENT "Haut-p."
 #define TR_BUZZER                      INDENT "Bipeur"
 #define TR_BYTES                       "bytes"
-#define TR_MODULE_BIND                 BUTTON(TR("Bnd", "Bind"))
+#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("Bnd", "Bind"))
 #define TR_POWERMETER_ATTN_NEEDED      "Atténuateur requis"
 #define TR_PXX2_SELECT_RX              "Sélect RX..."
 #define TR_PXX2_DEFAULT                "<défaut>"
 #define TR_BT_SELECT_DEVICE            "Sélect appareil"
 #define TR_DISCOVER                    "Découvrir"
-#define TR_BUTTON_INIT                 BUTTON("Init")
+#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
 #define TR_WAITING                     "Attente..."
 #define TR_RECEIVER_DELETE             "Suppr récept.?"
 #define TR_RECEIVER_RESET              "Reset récept.?"
 #define TR_SHARE                       "Partg"
 #define TR_BIND                        "Bind"
 #define TR_REGISTER                    TR("Enr", "Enregistr.")
-#define TR_MODULE_RANGE                BUTTON(TR("Prt", "Port."))
+#define TR_MODULE_RANGE                EDGETX_BUTTON(TR("Prt", "Port."))
 #define TR_RECEIVER_OPTIONS            TR("OPTIONS REC.", "OPTIONS RECEPTEUR")
-#define TR_DEL_BUTTON                  BUTTON(TR("Eff", "Effacer"))
-#define TR_RESET_BTN                   BUTTON("RAZ")
+#define TR_DEL_BUTTON                  EDGETX_BUTTON(TR("Eff", "Effacer"))
+#define TR_RESET_BTN                   EDGETX_BUTTON("RAZ")
 #define TR_DEBUG                       "Debug"
-#define TR_KEYS_BTN                    BUTTON(TR("Btns","Inters"))
-#define TR_ANALOGS_BTN                 BUTTON(TR("Anas", "Analogs"))
+#define TR_KEYS_BTN                    EDGETX_BUTTON(TR("Btns","Inters"))
+#define TR_ANALOGS_BTN                 EDGETX_BUTTON(TR("Anas", "Analogs"))
 #define TR_TOUCH_NOTFOUND              "Touch hardware not found"
 #define TR_TOUCH_EXIT                  "Touch screen to exit"
-#define TR_SET                         BUTTON("Déf")
+#define TR_SET                         EDGETX_BUTTON("Déf")
 #define TR_TRAINER                     "Ecolage"
 #define TR_CHANS                       "Chans"
 #define TR_ANTENNAPROBLEM              CENTER "Antenne radio défect.!"

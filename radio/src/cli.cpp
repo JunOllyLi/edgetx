@@ -1400,7 +1400,7 @@ int cliDebugVars(const char ** argv)
   extern volatile int32_t authenticateFrames;
   cliSerialPrint("authenticateFrames=%d", authenticateFrames);
 #endif
-#elif defined(PCBTARANIS)
+#elif defined(PCB_MUFFIN) || defined(PCBTARANIS)
   cliSerialPrint("telemetryErrors=%d", telemetryErrors);
 #endif
 

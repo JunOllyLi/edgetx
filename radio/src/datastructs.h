@@ -47,7 +47,18 @@ static inline void check_struct()
 
   CHKSIZE(VarioData, 5);
 
-#if defined(PCBX7) || defined(PCBXLITE) || defined(PCBX9LITE)
+#if defined(PCB_MUFFIN) && defined(COLORLCD)
+  CHKSIZE(MixData, 20);
+  CHKSIZE(ExpoData, 17);
+  CHKSIZE(LimitData, 13);
+  CHKSIZE(LogicalSwitchData, 9);
+  CHKSIZE(CustomFunctionData, 11);
+  CHKSIZE(FlightModeData, 32 + 2*NUM_TRIMS);
+  CHKSIZE(TimerData, 17);
+  CHKSIZE(SwashRingData, 8);
+  CHKSIZE(ModelHeader, 131);
+  CHKSIZE(CurveHeader, 4);
+#elif defined(PCB_MUFFIN) || defined(PCBX7) || defined(PCBXLITE) || defined(PCBX9LITE)
   CHKSIZE(MixData, 20);
   CHKSIZE(ExpoData, 17);
   CHKSIZE(LimitData, 11);
@@ -128,7 +139,10 @@ static inline void check_struct()
 #elif defined(RADIO_BOXER)
   CHKSIZE(RadioData, 875);
   CHKSIZE(ModelData, 6165);
-#elif defined(PCBX7)
+#elif defined(PCB_MUFFIN) && defined(COLORLCD)
+  CHKSIZE(RadioData, 1037);
+  CHKSIZE(ModelData, 11211);
+#elif defined(PCB_MUFFIN) || defined(PCBX7)
   CHKSIZE(RadioData, 866);
   CHKSIZE(ModelData, 6164);
 #elif defined(PCBX9E)

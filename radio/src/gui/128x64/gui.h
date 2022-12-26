@@ -138,7 +138,7 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
 #define CHECK_INCDEC_GENVAR(event, var, min, max) \
   var = checkIncDecGen(event, var, min, max)
 
-#if defined(PCBTARANIS)
+#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
 #define CURSOR_ON_LINE()               (menuHorizontalPosition < 0)
 #else
 #define CURSOR_ON_LINE()               (0)
@@ -265,7 +265,7 @@ void menuChannelsViewCommon(event_t event);
 #endif
 
 // TODO enum
-#if defined(PCBX7) || defined(PCBX9LITE)
+#if defined(PCB_MUFFIN) || defined(PCBX7) || defined(PCBX9LITE)
 #define EDIT_MODE_INIT                 0
 #else
 #define EDIT_MODE_INIT                 -1

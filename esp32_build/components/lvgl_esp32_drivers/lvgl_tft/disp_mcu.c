@@ -114,6 +114,8 @@ void lcd_mcu_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t
 
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_HX8357
 extern esp_err_t esp_lcd_new_panel_hx8357(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel);
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
+extern esp_err_t esp_lcd_new_panel_ili9488(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel);
 #endif
 
 void disp_mcu_panel_init(lv_disp_drv_t *disp_drv) {
@@ -125,6 +127,8 @@ void disp_mcu_panel_init(lv_disp_drv_t *disp_drv) {
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &io_handle));
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_HX8357
     ESP_ERROR_CHECK(esp_lcd_new_panel_hx8357(io_handle, &panel_config, &panel_handle));
+#elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
+    ESP_ERROR_CHECK(esp_lcd_new_panel_ili9488(io_handle, &panel_config, &panel_handle));
 #endif
     esp_lcd_panel_reset(panel_handle);
     esp_lcd_panel_init(panel_handle);

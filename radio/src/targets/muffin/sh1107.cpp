@@ -12,6 +12,9 @@
 #include "freertos/task.h"
 #include "i2c_driver.h"
 
+extern i2c_master_bus_handle_t toplcd_i2c_bus_handle;
+static i2c_master_dev_handle_t toplcd_handle = NULL;
+
 /*********************
  *      DEFINES
  *********************/
@@ -54,6 +57,12 @@ static void sh1107_send_color(void * data, uint16_t length);
 
 void sh1107_init(void)
 {
+    i2c_device_config_t i2c_dev_conf = {
+        .device_address = SH1107_ADDR,
+        .scl_speed_hz = 400000,
+    };
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(toplcd_i2c_bus_handle, &i2c_dev_conf, &toplcd_handle));
+
     // Use Double Bytes Commands if necessary, but not Command+Data
     // Initialization taken from https://github.com/nopnop2002/esp-idf-m5stick
 	lcd_init_cmd_t init_cmds[]={
@@ -130,16 +139,16 @@ void sh1107_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * colo
 
 static void sh1107_send_cmd(uint8_t cmd)
 {
-    i2c_register_write_byte(SH1107_ADDR, 0, cmd);
+    i2c_register_write_byte(toplcd_handle, 0, cmd);
 }
 
 static void sh1107_send_data(void * data, uint16_t length)
 {
     if (0 != length) {
     	uint8_t dc_byte = 0x40;
-    	//i2c_register_write_buf(SH1107_ADDR, &dc_byte, 1);
+	//i2c_register_write_buf(toplcd_handle, &dc_byte, 1);
     	*(uint8_t *)data = 0x40;
-    	i2c_register_write_buf(SH1107_ADDR, (uint8_t *)data, length + 1);
+	i2c_register_write_buf(toplcd_handle, (uint8_t *)data, length + 1);
     }
 }
 
@@ -147,8 +156,8 @@ static void sh1107_send_color(void * data, uint16_t length)
 {
     if (0 != length) {
     	uint8_t dc_byte = 0x40;
-    	//i2c_register_write_buf(SH1107_ADDR, &dc_byte, 1);
+	//i2c_register_write_buf(SH1107_ADDR, &dc_byte, 1);
     	*(uint8_t *)data = 0x40;
-    	i2c_register_write_buf(SH1107_ADDR, (uint8_t *)data, length + 1);
+	i2c_register_write_buf(toplcd_handle, (uint8_t *)data, length + 1);
     }
 }

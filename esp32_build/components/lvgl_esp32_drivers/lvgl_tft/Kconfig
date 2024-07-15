@@ -13,6 +13,10 @@ menu "LVGL TFT Display controller"
 
         config LV_PREDEFINED_DISPLAY_NONE
             bool "None"
+        config LV_PREDEFINED_DISPLAY_MUFFIN
+            bool "Muffin-TX"
+            select LV_TFT_DISPLAY_CONTROLLER_ILI9488
+            select LV_TFT_DISPLAY_PROTOCOL_MCU
         config LV_PREDEFINED_DISPLAY_WROVER4
             bool "ESP-Wrover-KIT v4.1"
             select LV_TFT_DISPLAY_CONTROLLER_ILI9341
@@ -1039,13 +1043,14 @@ menu "LVGL TFT Display controller"
     config LV_BACKLIGHT_ACTIVE_LVL
         bool "Is backlight turn on with a HIGH (1) logic level?" if \
             ( LV_PREDEFINED_DISPLAY_NONE && ! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) ) \
-            || LV_PREDEFINED_DISPLAY_RPI_MPI3501
+            || LV_PREDEFINED_DISPLAY_RPI_MPI3501 || LV_PREDEFINED_DISPLAY_MUFFIN
         depends on !LV_DISP_BACKLIGHT_OFF
         default y if LV_PREDEFINED_DISPLAY_M5STACK
         default y if LV_PREDEFINED_DISPLAY_ERTFT0356
         default y if LV_PREDEFINED_DISPLAY_TTGO
         default y if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
         default y if LV_PREDEFINED_DISPLAY_WT32_SC01
+        default y if LV_PREDEFINED_DISPLAY_MUFFIN
         help
             Some backlights are turned on with a high signal, others held low.
             If enabled, a value of 1 will be sent to the display to enable the backlight,
@@ -1054,7 +1059,7 @@ menu "LVGL TFT Display controller"
     config LV_DISP_PIN_BCKL
         int "GPIO for Backlight Control" if \
             ( LV_PREDEFINED_DISPLAY_NONE && ! ( LV_TFT_DISPLAY_CONTROLLER_SH1107 || LV_TFT_DISPLAY_CONTROLLER_SSD1306 ) ) \
-            || LV_PREDEFINED_DISPLAY_RPI_MPI3501 || LV_TFT_DISPLAY_CONTROLLER_HX8357
+            || LV_PREDEFINED_DISPLAY_RPI_MPI3501 || LV_TFT_DISPLAY_CONTROLLER_HX8357 || LV_PREDEFINED_DISPLAY_MUFFIN
         depends on !LV_DISP_BACKLIGHT_OFF
         default 23 if LV_PREDEFINED_PINS_38V1
         default 26 if LV_PREDEFINED_PINS_38V4
@@ -1066,6 +1071,7 @@ menu "LVGL TFT Display controller"
         default 4 if LV_PREDEFINED_DISPLAY_TTGO
         default 2 if LV_PREDEFINED_DISPLAY_TTGO_CAMERA_PLUS
         default 23 if LV_PREDEFINED_DISPLAY_WT32_SC01
+        default 3 if LV_PREDEFINED_DISPLAY_MUFFIN
         default -1
 
         help

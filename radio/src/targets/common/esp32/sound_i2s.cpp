@@ -36,9 +36,9 @@ void audioInit() {
         .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
         .gpio_cfg = {
             .mclk = I2S_GPIO_UNUSED,    // some codecs may require mclk signal, this example doesn't need it
-            .bclk = (gpio_num_t)I2S_BCLK,
-            .ws   = (gpio_num_t)I2S_LRCLK,
-            .dout = (gpio_num_t)I2S_DOUT,
+            .bclk = I2S_BCLK,
+            .ws   = I2S_LRCLK,
+            .dout = I2S_DOUT,
             .din  = I2S_GPIO_UNUSED,
             .invert_flags = {
                 .mclk_inv = false,

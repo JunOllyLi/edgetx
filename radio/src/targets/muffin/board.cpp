@@ -34,41 +34,34 @@
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 
-extern void adruino_adc_init(void);
+#include "driver/i2c_master.h"
+
 extern void flysky_hall_stick_init();
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
+i2c_master_bus_handle_t i2c_0_bus_handle;
+i2c_master_bus_handle_t lvgl_i2c_bus_handle;
+i2c_master_bus_handle_t rtc_i2c_bus_handle;
+i2c_master_bus_handle_t gpioext_i2c_bus_handle;
+i2c_master_bus_handle_t toplcd_i2c_bus_handle;
+static void board_init_i2c(void) {
+    i2c_master_bus_config_t i2c_bus_config = {
+        .i2c_port = I2C_NUM_0,
+        .sda_io_num = I2C_0_SDA,
+        .scl_io_num = I2C_0_SCL,
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .glitch_ignore_cnt = 7,
+        .flags = {
+          .enable_internal_pullup = 1
+        }
+    };
 
-//#include "usb_dcd_int.h"
-//#include "usb_bsp.h"
-#if defined(__cplusplus)
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_bus_config, &i2c_0_bus_handle));
+    lvgl_i2c_bus_handle = i2c_0_bus_handle;
+    rtc_i2c_bus_handle = i2c_0_bus_handle;
+    gpioext_i2c_bus_handle = i2c_0_bus_handle;
+    toplcd_i2c_bus_handle = i2c_0_bus_handle;
 }
-#endif
-
-#if defined(SPORT_UPDATE_PWR_GPIO)
-void sportUpdateInit()
-{
-}
-
-void sportUpdatePowerOn()
-{
-}
-
-void sportUpdatePowerOff()
-{
-}
-
-void sportUpdatePowerInit()
-{
-  if (g_eeGeneral.sportUpdatePower == 1)
-    sportUpdatePowerOn();
-  else
-    sportUpdatePowerOff();
-}
-#endif
-
+#if 0
 // just to keep a reference of the layout so they do not get optimized out by compiler.
 extern LayoutFactory Layout1P2;
 extern LayoutFactory Layout1P3;
@@ -88,11 +81,13 @@ LayoutFactory *layouts[20] = {
   &layout2P1, &Layout2P3, &Layout2x1, &layout2x2, &layout2x3, &layout2x4,
   &layout4P2
 };
+#endif
 
 lv_color_t* lcdbuf;
 extern lv_disp_drv_t disp_drv;
 void boardInit()
 {
+#if 0
   /* Initialize NVS — it is used to store PHY calibration data */
   esp_err_t ret = nvs_flash_init();
   if  (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -102,28 +97,30 @@ void boardInit()
   ESP_ERROR_CHECK(ret);
 
   nimble_port_init();
+#endif
 
-  audioInit();
 #if !defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488)
   lcdbuf = (lv_color_t*)heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t) * 2, MALLOC_CAP_DMA);
 #endif
 
+  board_init_i2c();
   lv_init();
   lvgl_driver_init(&disp_drv); // lvgl driver initializes I2C_0 as well.
 
   keysInit();
-
+#if 0
   sdInit();
+#endif
   rtcInit();
 
-  backlightInit();
-
+  //backlightInit();
+#if 0
   initWiFi();
+#endif
+  init2MhzTimer();
 
   flysky_hall_stick_init();
-  init2MhzTimer();
-  adruino_adc_init();
-
+  audioInit();
   toplcdInit();
 }
 

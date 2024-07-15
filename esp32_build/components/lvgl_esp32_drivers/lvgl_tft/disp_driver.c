@@ -54,7 +54,7 @@ void *disp_driver_init(lv_disp_drv_t *disp_drv)
     // It will be set up during runtime in the future
 
     // this handle was not passed back to caller, and not used anywhere, how is the backlight gets controlled by app code?
-#if 0 //(defined(CONFIG_LV_DISP_BACKLIGHT_SWITCH) || defined(CONFIG_LV_DISP_BACKLIGHT_PWM))
+#if (defined(CONFIG_LV_DISP_BACKLIGHT_SWITCH) || defined(CONFIG_LV_DISP_BACKLIGHT_PWM))
     const disp_backlight_config_t bckl_config = {
         .gpio_num = CONFIG_LV_DISP_PIN_BCKL,
 #if defined CONFIG_LV_DISP_BACKLIGHT_PWM

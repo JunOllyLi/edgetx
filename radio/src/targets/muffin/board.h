@@ -57,9 +57,6 @@ From Kconfig
   LCD DC 48
   LCD WR 47
 
-#define I2C_SCL 7
-#define I2C_SDA 6
-
 //  MOSI -1
 //  MISO -1
 //  RESET -1
@@ -67,6 +64,9 @@ From Kconfig
 //  TOUCH CS -1
 //  TOUCH IRQ 38
 */
+
+#define I2C_0_SCL GPIO_NUM_7
+#define I2C_0_SDA GPIO_NUM_6
 
 #define POT1_ADC_CHANNEL ADC_CHANNEL_5  // GPIO 6
 #define POT2_ADC_CHANNEL ADC_CHANNEL_4  // GPIO 5
@@ -93,9 +93,9 @@ From Kconfig
 #endif
 #define SDCARD_CS_GPIO 42
 
-#define I2S_DOUT 16
-#define I2S_BCLK 17
-#define I2S_LRCLK 18
+#define I2S_DOUT GPIO_NUM_16
+#define I2S_BCLK GPIO_NUM_17
+#define I2S_LRCLK GPIO_NUM_18
 
 uint32_t pwrCheck();
 void pwrOn();

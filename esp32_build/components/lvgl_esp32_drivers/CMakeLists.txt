@@ -88,7 +88,7 @@ if(CONFIG_LV_TOUCH_CONTROLLER)
 endif()
 
 if(CONFIG_LV_I2C)
-    list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
+    # Use ESPIDF i2c_master instead - list(APPEND SOURCES "lvgl_i2c/i2c_manager.c")
 endif()
 
 idf_component_register(SRCS ${SOURCES}

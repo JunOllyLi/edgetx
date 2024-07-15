@@ -31,6 +31,9 @@
   0x11 ///< Temperature register (high byte - low byte is at 0x12), 10-bit
        ///< temperature value
 
+extern i2c_master_bus_handle_t rtc_i2c_bus_handle;
+static i2c_master_dev_handle_t rtc_handle = NULL;
+
 static uint8_t bcd2bin(uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bin2bcd(uint8_t val) { return val + 6 * (val / 10); }
 
@@ -52,19 +55,19 @@ void rtcSetTime(const struct gtm * t)
                        bin2bcd(t->tm_mday),
                        bin2bcd(t->tm_mon + 1),
                        bin2bcd(t->tm_year + TM_YEAR_BASE - 2000U)};
-    i2c_register_write_buf(DS3231_ADDRESS, buffer, 8);
+    i2c_register_write_buf(rtc_handle, buffer, 8);
 
     uint8_t statreg = 0;
-    i2c_register_read(DS3231_ADDRESS, DS3231_STATUSREG, &statreg, sizeof(statreg));
+    i2c_register_read(rtc_handle, DS3231_STATUSREG, &statreg, sizeof(statreg));
     statreg &= ~0x80; // flip OSF bit
-    i2c_register_write_byte(DS3231_ADDRESS, DS3231_STATUSREG, statreg);
+    i2c_register_write_byte(rtc_handle, DS3231_STATUSREG, statreg);
 }
 
 void rtcGetTime(struct gtm * t)
 {
     uint8_t buffer[7];
     buffer[0] = 0;
-    i2c_register_write_read_buf(DS3231_ADDRESS, buffer, 1, buffer, 7);
+    i2c_register_write_read_buf(rtc_handle, buffer, 1, buffer, 7);
 
     TRACE("rtcGetTime %d/%d/%d %d:%d:%d",
             bcd2bin(buffer[6]) + 2000U,
@@ -84,6 +87,12 @@ void rtcGetTime(struct gtm * t)
 
 void rtcInit()
 {
+    i2c_device_config_t i2c_dev_conf = {
+        .device_address = DS3231_ADDRESS,
+        .scl_speed_hz = 400000,
+    };
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(rtc_i2c_bus_handle, &i2c_dev_conf, &rtc_handle));
+
     struct gtm utm;
     rtcGetTime(&utm);
     g_rtcTime = gmktime(&utm);

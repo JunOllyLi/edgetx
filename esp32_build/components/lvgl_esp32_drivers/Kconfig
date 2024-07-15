@@ -6,9 +6,3 @@ menu "LVGL ESP Drivers"
 
 endmenu
 
-menu "I2C Port Settings"
-    depends on LV_I2C && !HAVE_I2C_MANAGER
-
-    rsource "lvgl_i2c/Kconfig"
-
-endmenu

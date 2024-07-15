@@ -30,16 +30,17 @@
 #define TAG "FT6X36"
 #define FT6X36_TOUCH_QUEUE_ELEMENTS 1
 
+#define FT6X36_I2C_TIMEOUT -1
+static i2c_master_dev_handle_t ft6x06_handle = NULL;
 
 static ft6x36_status_t ft6x36_status;
-static uint8_t current_dev_addr;       // set during init
 static ft6x36_touch_t touch_inputs = { -1, -1, LV_INDEV_STATE_REL };    // -1 coordinates to designate it was never touched
 #if CONFIG_LV_FT6X36_COORDINATES_QUEUE
 QueueHandle_t ft6x36_touch_queue_handle;
 #endif
 
-static esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *data_buf) {
-    return lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, slave_addr, register_addr, data_buf, 1);
+static esp_err_t ft6x06_i2c_read8(uint8_t register_addr, uint8_t *data_buf) {
+    return i2c_master_transmit_receive(ft6x06_handle, &register_addr, 1, data_buf, 1, FT6X36_I2C_TIMEOUT);
 }
 
 /**
@@ -54,7 +55,7 @@ uint8_t ft6x36_get_gesture_id() {
     }
     uint8_t data_buf;
     esp_err_t ret;
-    if ((ret = ft6x06_i2c_read8(current_dev_addr, FT6X36_GEST_ID_REG, &data_buf) != ESP_OK))
+    if ((ret = ft6x06_i2c_read8(FT6X36_GEST_ID_REG, &data_buf) != ESP_OK))
         ESP_LOGE(TAG, "Error reading from device: %s", esp_err_to_name(ret));
     return data_buf;
 }
@@ -67,25 +68,31 @@ uint8_t ft6x36_get_gesture_id() {
 void ft6x06_init(uint16_t dev_addr) {
 
     ft6x36_status.inited = true;
-    current_dev_addr = dev_addr;
-    uint8_t data_buf;
+
     esp_err_t ret;
+    i2c_device_config_t i2c_dev_conf = {
+        .scl_speed_hz = 400000, // TODO: configurable?
+        .device_address = dev_addr,
+    };
+    ret = i2c_master_bus_add_device(lvgl_i2c_bus_handle, &i2c_dev_conf, &ft6x06_handle);
+
+    uint8_t data_buf;
     ESP_LOGI(TAG, "Found touch panel controller");
-    if ((ret = ft6x06_i2c_read8(dev_addr, FT6X36_PANEL_ID_REG, &data_buf) != ESP_OK))
+    if ((ret = ft6x06_i2c_read8(FT6X36_PANEL_ID_REG, &data_buf) != ESP_OK))
         ESP_LOGE(TAG, "Error reading from device: %s",
                  esp_err_to_name(ret));    // Only show error the first time
     ESP_LOGI(TAG, "\tDevice ID: 0x%02x", data_buf);
 
-    ft6x06_i2c_read8(dev_addr, FT6X36_CHIPSELECT_REG, &data_buf);
+    ft6x06_i2c_read8(FT6X36_CHIPSELECT_REG, &data_buf);
     ESP_LOGI(TAG, "\tChip ID: 0x%02x", data_buf);
 
-    ft6x06_i2c_read8(dev_addr, FT6X36_DEV_MODE_REG, &data_buf);
+    ft6x06_i2c_read8(FT6X36_DEV_MODE_REG, &data_buf);
     ESP_LOGI(TAG, "\tDevice mode: 0x%02x", data_buf);
 
-    ft6x06_i2c_read8(dev_addr, FT6X36_FIRMWARE_ID_REG, &data_buf);
+    ft6x06_i2c_read8(FT6X36_FIRMWARE_ID_REG, &data_buf);
     ESP_LOGI(TAG, "\tFirmware ID: 0x%02x", data_buf);
 
-    ft6x06_i2c_read8(dev_addr, FT6X36_RELEASECODE_REG, &data_buf);
+    ft6x06_i2c_read8(FT6X36_RELEASECODE_REG, &data_buf);
     ESP_LOGI(TAG, "\tRelease code: 0x%02x", data_buf);
     
 #if CONFIG_LV_FT6X36_COORDINATES_QUEUE
@@ -112,7 +119,8 @@ bool ft6x36_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     }
     uint8_t data_buf[5];        // 1 byte status, 2 bytes X, 2 bytes Y
 
-    esp_err_t ret = lvgl_i2c_read(CONFIG_LV_I2C_TOUCH_PORT, current_dev_addr, FT6X36_TD_STAT_REG, &data_buf[0], 5);
+    uint8_t register_addr = FT6X36_TD_STAT_REG;
+    esp_err_t ret = i2c_master_transmit_receive(ft6x06_handle, &register_addr, 1, data_buf, 5, FT6X36_I2C_TIMEOUT);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Error talking to touch IC: %s", esp_err_to_name(ret));
     }

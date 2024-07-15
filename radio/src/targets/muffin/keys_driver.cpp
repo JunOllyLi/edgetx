@@ -21,6 +21,11 @@
 #include "opentx.h"
 #include "i2c_driver.h"
 #include "FreeRTOS_entry.h"
+
+extern i2c_master_bus_handle_t gpioext_i2c_bus_handle;
+static i2c_master_dev_handle_t mcp0 = NULL;
+static i2c_master_dev_handle_t mcp1 = NULL;
+
 // keys uses MCP23X17
 /* ================= chip definitions ======================= */
 #define MCP23XXX_IODIR 0x00   //!< I/O direction register
@@ -166,12 +171,12 @@ uint32_t readKeys()
   uint8_t mask = (1 << BUTTONS_ON_GPIOA) - 1;
   uint8_t gpioAB[2] = {0};
   if (mcp0_exist) {
-    i2c_register_read(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 0), gpioAB, sizeof(gpioAB));
+    i2c_register_read(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 0), gpioAB, sizeof(gpioAB));
     result |= (gpioAB[0] ^ mask) & mask;
     process_pwr_btn_state(0 != (gpioAB[0] & PWR_BTN_BIT));
   }
   if (mcp1_exist) {
-    i2c_register_read(MCP1_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 0), gpioAB, sizeof(gpioAB));
+    i2c_register_read(mcp1, MCP_REG_ADDR(MCP23XXX_GPIO, 0), gpioAB, sizeof(gpioAB));
     mcp1_trim = (gpioAB[0] & MCP1_TRIM_MASK) ^ MCP1_TRIM_MASK;
     switches = (gpioAB[1] & MCP1_SWITCHES_MASK) ^ MCP1_SWITCHES_MASK;
 
@@ -216,61 +221,79 @@ void readKeysAndTrims()
 
 void keysInit()
 {
+    i2c_device_config_t i2c_dev0_conf = {
+        .device_address = MCP0_ADDR,
+        .scl_speed_hz = 400000,
+    };
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(gpioext_i2c_bus_handle, &i2c_dev0_conf, &mcp0));
+
+    i2c_device_config_t i2c_dev1_conf = {
+        .device_address = MCP1_ADDR,
+        .scl_speed_hz = 400000,
+    };
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(gpioext_i2c_bus_handle, &i2c_dev1_conf, &mcp1));
+
 #if 0 // TODO-MUFFIN
   RTOS_CREATE_MUTEX(keyMutex);
 //#ifndef DISABLE_I2C_DEVS
   // pull up
   esp_err_t ret  = 0;
-  ret = i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPPU, 0), (1 << BUTTONS_ON_GPIOA) - 1);
+  ret = i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPPU, 0), (1 << BUTTONS_ON_GPIOA) - 1);
   if (0 == ret) {
     mcp0_exist = true;
-    ret = i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPPU, 0), (1 << BUTTONS_ON_GPIOA) - 1); // TODO: for some reason need to set pull up twice?
+    ret = i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPPU, 0), (1 << BUTTONS_ON_GPIOA) - 1); // TODO: for some reason need to set pull up twice?
     // pin direction
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_IODIR, 0), 0xFF); // all input by default
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_IODIR, 0), 0xFF); // all input by default
 
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_IODIR, 1), (uint8_t)((~INTMOD_PWREN_BIT) & 0xFF));
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), 0x00U);
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_IODIR, 1), (uint8_t)((~INTMOD_PWREN_BIT) & 0xFF));
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), 0x00U);
   }
 
   // pull up
-  ret = i2c_register_write_byte(MCP1_ADDR, MCP_REG_ADDR(MCP23XXX_GPPU, 0), MCP1_TRIM_MASK);
+  ret = i2c_register_write_byte(mcp1, MCP_REG_ADDR(MCP23XXX_GPPU, 0), MCP1_TRIM_MASK);
   if (0 == ret) {
     mcp1_exist = true;
-    ret = i2c_register_write_byte(MCP1_ADDR, MCP_REG_ADDR(MCP23XXX_GPPU, 0), MCP1_TRIM_MASK); // TODO: for some reason need to set pull up twice?
-    i2c_register_write_byte(MCP1_ADDR, MCP_REG_ADDR(MCP23XXX_GPPU, 1), MCP1_SWITCHES_MASK | MCP1_KEYS_MASK);
+    ret = i2c_register_write_byte(mcp1, MCP_REG_ADDR(MCP23XXX_GPPU, 0), MCP1_TRIM_MASK); // TODO: for some reason need to set pull up twice?
+    i2c_register_write_byte(mcp1, MCP_REG_ADDR(MCP23XXX_GPPU, 1), MCP1_SWITCHES_MASK | MCP1_KEYS_MASK);
 
     // pin direction
-    i2c_register_write_byte(MCP1_ADDR, MCP_REG_ADDR(MCP23XXX_IODIR, 0), 0xFF); // all input by default
-    i2c_register_write_byte(MCP1_ADDR, MCP_REG_ADDR(MCP23XXX_IODIR, 1), 0xFF); // all input by default
+    i2c_register_write_byte(mcp1, MCP_REG_ADDR(MCP23XXX_IODIR, 0), 0xFF); // all input by default
+    i2c_register_write_byte(mcp1, MCP_REG_ADDR(MCP23XXX_IODIR, 1), 0xFF); // all input by default
   }
 #endif
 }
 
 void INTERNAL_MODULE_ON(void) {
+#if 0
     uint8_t gpioB[1] = {0};
-    i2c_register_read(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB, sizeof(gpioB));
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB[0] | INTMOD_PWREN_BIT);
+    i2c_register_read(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB, sizeof(gpioB));
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB[0] | INTMOD_PWREN_BIT);
+#endif
 }
 void INTERNAL_MODULE_OFF(void) {
+#if 0
     uint8_t gpioB[1] = {0};
-    i2c_register_read(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB, sizeof(gpioB));
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB[0] & ~INTMOD_PWREN_BIT);
+    i2c_register_read(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB, sizeof(gpioB));
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB[0] & ~INTMOD_PWREN_BIT);
+#endif
 }
 
 bool IS_INTERNAL_MODULE_ON(void) {
     uint8_t gpioB[1] = {0};
-    i2c_register_read(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB, sizeof(gpioB));
+    i2c_register_read(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), gpioB, sizeof(gpioB));
     return (0 != (gpioB[0] & INTMOD_PWREN_BIT));
 }
 
 void pwrOff()
 {
     TRACE("Power off");
+#if 0
     RTOS_WAIT_MS(200);
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), PWR_OFF_BIT); // keep pwr on but make int module off first
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_IODIR, 1), (uint8_t)((~(INTMOD_PWREN_BIT | PWR_OFF_BIT)) & 0xFF));
-    i2c_register_write_byte(MCP0_ADDR, MCP_REG_ADDR(MCP23XXX_GPIO, 1), 0); // Power off
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), PWR_OFF_BIT); // keep pwr on but make int module off first
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_IODIR, 1), (uint8_t)((~(INTMOD_PWREN_BIT | PWR_OFF_BIT)) & 0xFF));
+    i2c_register_write_byte(mcp0, MCP_REG_ADDR(MCP23XXX_GPIO, 1), 0); // Power off
     while (1) RTOS_WAIT_MS(20); // should never return
+#endif
 }
 
 bool pwrPressed()

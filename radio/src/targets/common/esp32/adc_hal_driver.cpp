@@ -106,10 +106,6 @@ static bool check_valid_data(const adc_digi_output_data_t *data)
     return true;
 }
 
-void app_main(void)
-{
-}
-
 static bool arduino_hal_adc_init()
 {
 

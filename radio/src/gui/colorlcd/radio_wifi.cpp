@@ -123,11 +123,9 @@ void RadioWiFiPage::build(FormWindow * window)
 
   line = window->newLine(&grid);
   new StaticText(line, rect_t{}, "WiFi ON", 0, COLOR_THEME_PRIMARY1);
-#if 0 // TODO-MUFFIN
-  auto box = new FormGroup(line, rect_t{});
+  auto box = new FormWindow(line, rect_t{});
   box->setFlexLayout(LV_FLEX_FLOW_ROW, lv_dpx(8));
   lv_obj_set_style_grid_cell_x_align(box->getLvObj(), LV_GRID_ALIGN_STRETCH, 0);
   lv_obj_set_style_flex_cross_place(box->getLvObj(), LV_FLEX_ALIGN_CENTER, 0);
-  new CheckBox(box, rect_t{}, GET_DEFAULT(wifi_en), onSetWiFiEnabled);
-#endif
+  new ToggleSwitch(box, rect_t{}, GET_SET_DEFAULT(wifi_en));
 }

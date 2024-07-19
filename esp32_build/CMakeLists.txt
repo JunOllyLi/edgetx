@@ -13,4 +13,4 @@ include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 project(edgetx)
 
-target_link_libraries(${project_elf} PRIVATE tx_firmware stdc++)
+target_link_libraries(${project_elf} PRIVATE tx_firmware board_lib stdc++)

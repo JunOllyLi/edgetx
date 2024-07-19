@@ -31,18 +31,20 @@
 
 #include "nvs_flash.h"
 /* BLE */
-#include "nimble/nimble_port.h"
-#include "nimble/nimble_port_freertos.h"
+//#include "nimble/nimble_port.h"
+//#include "nimble/nimble_port_freertos.h"
 
 #include "driver/i2c_master.h"
 
 extern void flysky_hall_stick_init();
+extern void ads1015_adc_init(void);
 
 i2c_master_bus_handle_t i2c_0_bus_handle;
 i2c_master_bus_handle_t lvgl_i2c_bus_handle;
 i2c_master_bus_handle_t rtc_i2c_bus_handle;
 i2c_master_bus_handle_t gpioext_i2c_bus_handle;
 i2c_master_bus_handle_t toplcd_i2c_bus_handle;
+i2c_master_bus_handle_t ads_i2c_bus_handle;
 static void board_init_i2c(void) {
     i2c_master_bus_config_t i2c_bus_config = {
         .i2c_port = I2C_NUM_0,
@@ -60,6 +62,7 @@ static void board_init_i2c(void) {
     rtc_i2c_bus_handle = i2c_0_bus_handle;
     gpioext_i2c_bus_handle = i2c_0_bus_handle;
     toplcd_i2c_bus_handle = i2c_0_bus_handle;
+    ads_i2c_bus_handle = i2c_0_bus_handle;
 }
 #if 0
 // just to keep a reference of the layout so they do not get optimized out by compiler.
@@ -83,11 +86,9 @@ LayoutFactory *layouts[20] = {
 };
 #endif
 
-lv_color_t* lcdbuf;
 extern lv_disp_drv_t disp_drv;
 void boardInit()
 {
-#if 0
   /* Initialize NVS — it is used to store PHY calibration data */
   esp_err_t ret = nvs_flash_init();
   if  (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -96,31 +97,25 @@ void boardInit()
   }
   ESP_ERROR_CHECK(ret);
 
-  nimble_port_init();
-#endif
-
-#if !defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488)
-  lcdbuf = (lv_color_t*)heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color_t) * 2, MALLOC_CAP_DMA);
-#endif
+  //nimble_port_init();
 
   board_init_i2c();
   lv_init();
-  lvgl_driver_init(&disp_drv); // lvgl driver initializes I2C_0 as well.
+  lvgl_driver_init(&disp_drv);
 
   keysInit();
-#if 0
-  sdInit();
-#endif
   rtcInit();
 
+  sdInit();
+
   //backlightInit();
-#if 0
   initWiFi();
-#endif
   init2MhzTimer();
 
   flysky_hall_stick_init();
   audioInit();
+
+  ads1015_adc_init();
   toplcdInit();
 }
 

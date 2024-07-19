@@ -125,6 +125,7 @@ const etx_timer_driver_t _fakeTimerDriver = {
   .deinit = module_timer_deinit,
   .send = module_timer_send,
 };
+extern etx_serial_driver_t IntmoduleSerialDriver;
 
 #if defined(HARDWARE_INTERNAL_MODULE)
 const etx_module_port_t _internal_ports[] = {
@@ -138,10 +139,10 @@ const etx_module_port_t _internal_ports[] = {
   },
 #else // INTMODULE_USART
   {
-    .port = ETX_MOD_PORT_SOFT_INV,
+    .port = ETX_MOD_PORT_UART,
     .type = ETX_MOD_TYPE_SERIAL,
-    .dir_flags = ETX_MOD_DIR_TX,
-    .drv = { .serial = &_fakeSerialDriver },
+    .dir_flags = ETX_MOD_DIR_TX_RX | ETX_MOD_FULL_DUPLEX,
+    .drv = { .serial = &IntmoduleSerialDriver },
     .hw_def = nullptr,
   },
 #endif

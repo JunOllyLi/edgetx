@@ -24,7 +24,7 @@ void hapticOff()
 {
 }
 
-void hapticOn(uint32_t pwmPercent)
+void hapticOn()
 {
 }
 

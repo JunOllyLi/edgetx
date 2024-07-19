@@ -87,16 +87,17 @@ From Kconfig
 #define SD_DEDICATED_SPI
 #ifdef SD_DEDICATED_SPI
 #define SD_SPI_HOST SPI2_HOST
-#define SDSPI_CLK 40
-#define SDSPI_MOSI 41
-#define SDSPI_MISO 38
+#define SDSPI_CLK GPIO_NUM_40
+#define SDSPI_MOSI GPIO_NUM_41
+#define SDSPI_MISO GPIO_NUM_39
 #endif
-#define SDCARD_CS_GPIO 42
+#define SDCARD_CS_GPIO GPIO_NUM_42
 
 #define I2S_DOUT GPIO_NUM_16
 #define I2S_BCLK GPIO_NUM_17
 #define I2S_LRCLK GPIO_NUM_18
 
+#define SOFT_PWR_CTRL
 uint32_t pwrCheck();
 void pwrOn();
 void pwrOff();
@@ -186,8 +187,9 @@ extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 
 #define INTMODULE_FIFO_SIZE         512
 
-#define BATTERY_DIVIDER 23711
-#define VOLTAGE_DROP 45
+#define BATT_SCALE 1251
+#define BATTERY_DIVIDER 320384
+#define VOLTAGE_DROP 0
 
 
 // WiFi

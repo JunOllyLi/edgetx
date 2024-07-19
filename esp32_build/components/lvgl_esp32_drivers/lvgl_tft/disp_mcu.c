@@ -18,7 +18,7 @@ static const char *TAG = "lcd-mcu";
 #include "lvgl_helpers.h"
 #include "disp_mcu.h"
 
-#define MCU_LCD_PIXEL_CLOCK_HZ (20 * 1000 * 1000)
+#define MCU_LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
 
 static esp_lcd_i80_bus_handle_t i80_bus = NULL;
 static esp_lcd_i80_bus_config_t bus_config = {
@@ -91,7 +91,7 @@ static esp_lcd_panel_handle_t panel_handle = NULL;
 static esp_lcd_panel_dev_config_t panel_config = {
     .reset_gpio_num = CONFIG_LV_TFT_MCU_RST_NUM,
     .color_space = ESP_LCD_COLOR_SPACE_RGB,
-    .bits_per_pixel = sizeof(lv_color_t) * 8,
+    .bits_per_pixel = 16,
 };
 
 static bool mcu_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)

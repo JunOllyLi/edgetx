@@ -48,19 +48,17 @@ static DSTATUS sdcard_spi_initialize(BYTE lun)
         .quadhd_io_num = -1,
     };
     config.slot = SD_SPI_HOST;
-    spi_bus_initialize((spi_host_device_t)config.slot, &bus_config, SPI_DMA_CH_AUTO);
+    esp_err_t err = spi_bus_initialize((spi_host_device_t)config.slot, &bus_config, SPI_DMA_CH_AUTO);
 #endif
-
     dev_config.host_id = (spi_host_device_t)config.slot;
 
-    dev_config.gpio_cs = (gpio_num_t)SDCARD_CS_GPIO;
+    dev_config.gpio_cs = SDCARD_CS_GPIO;
     sdspi_host_init();
     sdspi_host_init_device(&dev_config, &handle);
 
     config.slot = handle;
     if (0 == sdmmc_card_init(&config, card)) {
       card_present = true;
-      sdMount();
     } else {
       sdspi_host_remove_device(handle);
       sdspi_host_deinit();

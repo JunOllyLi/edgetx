@@ -47,6 +47,8 @@ void audioInit() {
             },
         },
     };
+    tx_std_cfg.slot_cfg.slot_mask = I2S_STD_SLOT_LEFT;
+
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(tx_chan, &tx_std_cfg));
     ESP_ERROR_CHECK(i2s_channel_enable(tx_chan));
 }
@@ -77,6 +79,7 @@ void audioSetCurrentBuffer(const AudioBuffer * buffer)
 
 
 EXT_RAM_BSS_ATTR static uint8_t zero[2048] = {0};
+static bool channel_enabled = true;
 
 void audioConsumeCurrentBuffer() {
   if (!currentBuffer) {
@@ -85,11 +88,16 @@ void audioConsumeCurrentBuffer() {
 
   static size_t last = 0U;
   if ((NULL == currentBuffer) && (0U != last)) {
-    size_t written = 0U;
-    i2s_channel_write(tx_chan, zero, last * 2, &written, 1000); // TODO: to mute the speaker? Not sure why after tone playing the speaker keeps having noise even if not writing to the I2S
+    // end of transfer?
     last = 0U;
+    i2s_channel_disable(tx_chan);
+    channel_enabled = false;
   }
   while (currentBuffer && currentSize) {
+    if (!channel_enabled) {
+      channel_enabled = true;
+      i2s_channel_enable(tx_chan);
+    }
     size_t written = 0U;
 #ifdef ENABLE_SOUND
     i2s_channel_write(tx_chan, currentBuffer, currentSize, &written, 1000);

@@ -76,7 +76,7 @@ rmt_ctx_t *esp32_rmt_tx_init(rmt_ctx_t *ctxmem, int pin, rmt_reserve_memsize_t m
     return rvalue;
 }
 
-static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data)
+IRAM_ATTR static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data)
 {
     BaseType_t high_task_wakeup = pdFALSE;
     QueueHandle_t receive_queue = (QueueHandle_t)user_data;

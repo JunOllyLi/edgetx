@@ -1,3 +1,4 @@
+
 add_definitions(-DPCB_MUFFIN)
 
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
@@ -28,10 +29,11 @@ add_definitions(-DREQUIRED_SDCARD_VERSION="${SDCARD_VERSION}" -DHAPTIC -DCROSSFI
 add_definitions(-DLUA_INPUTS -DTIMERS -DSOFTWARE_VOLUME) # TODO-feather
 add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
 option(INTERNAL_MODULE_MULTI "Support for MULTI internal module" ON)
-option(INTERNAL_MODULE_ELRS "Support for ELRS internal module" OFF)
-option(INTERNAL_MODULE_ESPNOW "Support for ESPNOW internal module" OFF)
+option(INTERNAL_MODULE_CRSF "Support for CRSF internal module" ON)
+option(INTERNAL_MODULE_ELRS "Support for ELRS internal module" ON)
+option(INTERNAL_MODULE_ESPNOW "Support for ESPNOW internal module" ON)
 option(INTERNAL_MODULE_BT_POWERUP "Support for Bluetooth internal module for POWERUP" OFF)
-set(FLAVOUR feather)
+set(FLAVOUR muffin)
 set(NAVIGATION_TYPE 9x)
 set(CPU_TYPE ESP32)
 set(LINKER_SCRIPT targets/muffin/ldscript.ld)
@@ -87,6 +89,10 @@ add_definitions(-DINTERNAL_MODULE_BT_POWERUP)
     ../common/esp32/esp_ble_powerup.c
     ../common/esp32/pulses_bt_powerup.cpp
     )
+endif()
+
+if(INTERNAL_MODULE_CRSF)
+add_definitions(-DINTERNAL_MODULE_CRSF)
 endif()
 
 if(INTERNAL_MODULE_ESPNOW)
@@ -256,16 +262,19 @@ set(TARGET_SRC
   ${EEPROM_MEDIA}
   ${TIMER_DRIVER}
   flyskyHallStick_driver.cpp
+  ads1015_adc.cpp
   switch_driver.cpp
   ../common/esp32/abnormal_reboot.cpp
   ../common/esp32/module_drivers.cpp
   ../common/esp32/watchdog_driver.cpp
   ../common/esp32/usb_driver.cpp
   ../common/esp32/i2c_driver.cpp
+  ../common/esp32/intmodule_serial_driver.cpp
   #../common/arm/stm32/audio_dac_driver.cpp
-  ../common/esp32/adc_hal_driver.cpp
+  #../common/esp32/adc_hal_driver.cpp
   #../common/arm/stm32/heartbeat_driver.cpp
   ../common/esp32/mixer_scheduler_driver.cpp
+  ../common/esp32/pulses_espnow.cpp
 
   ../simu/simulcd.cpp
   )
@@ -279,7 +288,7 @@ set(FIRMWARE_TARGET_SRC
   ${FIRMWARE_TARGET_SRC}
   #${LCD_DRIVER}
   board.cpp
-  keys_driver.cpp
+  mcp23017_io_driver.cpp
 
   pwr_driver.cpp
   rtc_driver.cpp
@@ -298,7 +307,7 @@ if(INTERNAL_MODULE_ELRS)
   set(INTERNAL_MODULE_MULTI NO)
   set(TARGET_SRC
     ${TARGET_SRC}
-    #../common/arm/stm32/intmodule_serial_driver.cpp
+    #../common/esp32/intmodule_serial_driver.cpp
     )
 endif()
 
@@ -322,3 +331,20 @@ if(INTERNAL_MODULE_ELRS)
 endif()
 
 set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})
+
+set(HW_DESC_JSON ${FLAVOUR}.json)
+#AddHardwareDefTarget(${HW_DESC_JSON})
+AddHWGenTarget(${HW_DESC_JSON} mcp23017_keys mcp23017_keys.inc)
+#AddHWGenTarget(${HW_DESC_JSON} simu_switches simu_switches.inc)
+AddHWGenTarget(${HW_DESC_JSON} hal_adc_inputs hal_adc_inputs.inc)
+AddHWGenTarget(${HW_DESC_JSON} ads1015_adc_inputs ads1015_adc_inputs.inc)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+add_library(board_lib OBJECT EXCLUDE_FROM_ALL
+  ${CMAKE_CURRENT_BINARY_DIR}/mcp23017_keys.inc
+  ${CMAKE_CURRENT_BINARY_DIR}/hal_adc_inputs.inc
+  ${CMAKE_CURRENT_BINARY_DIR}/ads1015_adc_inputs.inc
+  ${CMAKE_CURRENT_BINARY_DIR}/${HW_DESC_JSON}
+  )
+

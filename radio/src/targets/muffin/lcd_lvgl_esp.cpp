@@ -67,29 +67,20 @@ lv_disp_drv_t disp_drv;
 static lv_disp_draw_buf_t disp_buf;
 static lv_disp_t* disp = nullptr;
 static lv_indev_drv_t indev_drv;
-extern lv_color_t* lcdbuf;
+void lcd_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
 void lcdInitDisplayDriver()
 {
-#if defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488)
-    lv_color_t* buf1 = (lv_color_t*)malloc(DISP_BUF_SIZE * sizeof(lv_color_t));
-#else
-    lv_color_t* buf1 = lcdbuf;
-#endif
+    lv_color_t* buf1 = (lv_color_t*)malloc(320*480 * sizeof(lv_color_t));
     assert(buf1 != NULL);
 
     /* Use double buffered when not working with monochrome displays */
 #ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
-#if defined(CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488)
-    lv_color_t* buf2 = (lv_color_t*)malloc(DISP_BUF_SIZE * sizeof(lv_color_t));
-#else
-    lv_color_t* buf2 = &lcdbuf[DISP_BUF_SIZE];
-#endif
-    assert(buf2 != NULL);
+    lv_color_t* buf2 = (lv_color_t*)malloc(320*480 * sizeof(lv_color_t));
 #else
     static lv_color_t *buf2 = NULL;
 #endif
 
-    uint32_t size_in_px = DISP_BUF_SIZE;
+    uint32_t size_in_px = 320*480;
 
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820         \
     || defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_JD79653A    \
@@ -105,7 +96,7 @@ void lcdInitDisplayDriver()
     lv_disp_draw_buf_init(&disp_buf, buf1, buf2, size_in_px);
 
     lv_disp_drv_init(&disp_drv);
-    disp_drv.flush_cb = disp_driver_flush;
+    disp_drv.flush_cb = lcd_flush_cb;
 
 #if defined CONFIG_DISPLAY_ORIENTATION_PORTRAIT || defined CONFIG_DISPLAY_ORIENTATION_PORTRAIT_INVERTED
     disp_drv.rotated = 1;
@@ -151,15 +142,20 @@ void lcdInitDisplayDriver()
 #define DISPBUF_LINES (DISP_BUF_SIZE / LV_HOR_RES_MAX)
 #define PIXEL_EACHBLOCK (LV_HOR_RES_MAX * DISPBUF_LINES)
 void lcdRefresh() {
-  lv_color_t *p = (lv_color_t *)lcd->getData();
   lv_area_t area = {.x1 = 0, .y1 = 0, .x2 = LV_HOR_RES_MAX - 1, .y2 = DISPBUF_LINES - 1};
-  while (area.y2 < LV_VER_RES_MAX) {
-    int lines = LV_VER_RES_MAX - area.y1;
-    if (lines > DISPBUF_LINES) lines = DISPBUF_LINES;
+  lcd_flush_cb(&disp_drv, &area, (lv_color_t *)lcd->getData());
+}
 
-    disp_drv.flush_cb(&disp_drv, &area, p);
-    area.y1 += lines;
-    area.y2 += lines;
+void lcd_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map) {
+  lv_color_t *p = color_map;
+  lv_area_t myarea = {.x1=area->x1, .y1=area->y1, .x2=area->x2, .y2=area->y1};
+  while (myarea.y2 < area->y2) {
+    int lines = area->y2 - myarea.y1;
+    if (lines > DISPBUF_LINES) lines = DISPBUF_LINES;
+    myarea.y2 = myarea.y1 + lines;
+
+    disp_driver_flush(&disp_drv, &myarea, p);
+    myarea.y1 += lines;
     p += PIXEL_EACHBLOCK; // OK to be added pass the end at the end of drawing
   }
 }

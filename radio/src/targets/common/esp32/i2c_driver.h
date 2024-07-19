@@ -8,6 +8,7 @@
 #define I2C_MASTER_TIMEOUT_MS 1000
 
 esp_err_t i2c_register_read(i2c_master_dev_handle_t handle, uint8_t reg_addr, uint8_t *data, size_t len);
+esp_err_t i2c_register_read_uint16(i2c_master_dev_handle_t handle, uint8_t reg_addr, uint16_t *data);
 esp_err_t i2c_register_write_byte(i2c_master_dev_handle_t handle, uint8_t reg_addr, uint8_t data);
 esp_err_t i2c_register_write_uint16(i2c_master_dev_handle_t handle, uint8_t reg_addr, uint16_t data);
 esp_err_t i2c_register_write_buf(i2c_master_dev_handle_t handle, uint8_t *buf, size_t len);

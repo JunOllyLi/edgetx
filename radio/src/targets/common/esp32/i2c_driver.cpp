@@ -7,6 +7,14 @@ esp_err_t i2c_register_read(i2c_master_dev_handle_t handle, uint8_t reg_addr, ui
     return i2c_master_transmit_receive(handle, &reg_addr, 1, data, len, I2C_MASTER_TIMEOUT_MS);
 }
 
+esp_err_t i2c_register_read_uint16(i2c_master_dev_handle_t handle, uint8_t reg_addr, uint16_t *data)
+{
+    uint8_t buf[2] = {0};
+    esp_err_t ret = i2c_master_transmit_receive(handle, &reg_addr, 1, buf, 2, I2C_MASTER_TIMEOUT_MS);
+    *data = ((uint16_t)buf[0] << 8) | buf[1];
+    return ret;
+}
+
 esp_err_t i2c_register_write_byte(i2c_master_dev_handle_t handle, uint8_t reg_addr, uint8_t data)
 {
     int ret;

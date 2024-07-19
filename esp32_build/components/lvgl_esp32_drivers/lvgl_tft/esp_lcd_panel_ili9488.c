@@ -158,14 +158,15 @@ static esp_err_t panel_ili9488_reset(esp_lcd_panel_t *panel)
 static esp_err_t panel_ili9488_init(esp_lcd_panel_t *panel)
 {
 	lcd_init_cmd_t ili_init_cmds[]={
-    {ILI9488_CMD_SLEEP_OUT, {0x00}, 0x80},
+        {ILI9488_CMD_SLEEP_OUT, {0x05}, 0x80},
 		{ILI9488_CMD_POSITIVE_GAMMA_CORRECTION, {0x00, 0x03, 0x09, 0x08, 0x16, 0x0A, 0x3F, 0x78, 0x4C, 0x09, 0x0A, 0x08, 0x16, 0x1A, 0x0F}, 15},
 		{ILI9488_CMD_NEGATIVE_GAMMA_CORRECTION, {0x00, 0x16, 0x19, 0x03, 0x0F, 0x05, 0x32, 0x45, 0x46, 0x04, 0x0E, 0x0D, 0x35, 0x37, 0x0F}, 15},
 		{ILI9488_CMD_POWER_CONTROL_1, {0x17, 0x15}, 2},
 		{ILI9488_CMD_POWER_CONTROL_2, {0x41}, 1},
 		{ILI9488_CMD_VCOM_CONTROL_1, {0x00, 0x12, 0x80}, 3},
 		{ILI9488_CMD_MEMORY_ACCESS_CONTROL, {(0x20 | 0x08)}, 1},
-		{ILI9488_CMD_COLMOD_PIXEL_FORMAT_SET, {0x66}, 1},
+		{ILI9488_CMD_COLMOD_PIXEL_FORMAT_SET, {0x55}, 1},
+		{ILI9488_CMD_DISP_INVERSION_ON, {0x00}, 1},
 		{ILI9488_CMD_INTERFACE_MODE_CONTROL, {0x00}, 1},
 		{ILI9488_CMD_FRAME_RATE_CONTROL_NORMAL, {0xA0}, 1},
 		{ILI9488_CMD_DISPLAY_INVERSION_CONTROL, {0x02}, 1},
@@ -199,8 +200,6 @@ static esp_err_t panel_ili9488_init(esp_lcd_panel_t *panel)
         pcmd++;
 	  }
 
-    panel_ili9488_swap_xy(panel, true);
-    panel_ili9488_mirror(panel, true, false);
 
     do {
         mybuf = (uint8_t *) heap_caps_malloc(DISP_BUF_SIZE * 3, MALLOC_CAP_DMA);
@@ -218,21 +217,6 @@ static esp_err_t panel_ili9488_draw_bitmap(esp_lcd_panel_t *panel, int x_start, 
     uint32_t size = (x_end - x_start) * (y_end - y_start);
 
     lv_color16_t *buffer_16bit = (lv_color16_t *) color_data;
-
-    uint32_t LD = 0;
-    uint32_t j = 0;
-
-    // TODO active_drv = drv;
-
-    for (uint32_t i = 0; i < size; i++) {
-        LD = buffer_16bit[i].full;
-        mybuf[j] = (uint8_t) (((LD & 0xF800) >> 8) | ((LD & 0x8000) >> 13));
-        j++;
-        mybuf[j] = (uint8_t) ((LD & 0x07E0) >> 3);
-        j++;
-        mybuf[j] = (uint8_t) (((LD & 0x001F) << 3) | ((LD & 0x0010) >> 2));
-        j++;
-    }
 
     x_start += ili9488->x_gap;
     x_end += ili9488->x_gap;
@@ -254,6 +238,7 @@ static esp_err_t panel_ili9488_draw_bitmap(esp_lcd_panel_t *panel, int x_start, 
     }, 4);
     // transfer frame buffer
     size_t len = (x_end - x_start) * (y_end - y_start) * ili9488->fb_bits_per_pixel / 8;
+    memcpy(mybuf, color_data, len);
     esp_lcd_panel_io_tx_color(io, ILI9488_CMD_MEMORY_WRITE, mybuf, len);
 
     return ESP_OK;

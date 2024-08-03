@@ -23,6 +23,7 @@
 #include "flyskyHallStick_driver.h"
 #include "esp32_rmt_pulse.h"
 #include "hal/adc_driver.h"
+#include "esp32_uart_driver.h"
 #include "crc.h"
 
 unsigned char HallCmd[264];
@@ -33,6 +34,23 @@ STRUCT_HALL HallProtocol = { 0 };
 STRUCT_HALL HallProtocolTx = { 0 };
 signed short hall_raw_values[FLYSKY_HALL_CHANNEL_COUNT];
 unsigned short hall_adc_values[FLYSKY_HALL_CHANNEL_COUNT];
+
+static const etx_esp32_uart_hw_def_t gimbal_uart_hw_def = {
+    .uart_port = UART_NUM_1,
+    .rx_pin = FLYSKY_UART_RX_PIN,
+    .tx_pin = FLYSKY_UART_TX_PIN,
+    .fifoSize = 4096,
+    .queueSize = 10
+};
+
+etx_serial_init param = {
+  .baudrate = 921600,
+  .encoding = ETX_Encoding_8N1,
+  .direction = ETX_Dir_TX_RX,
+  .polarity = ETX_Pol_Normal
+};
+
+void flysky_hall_process_byte(uint8_t byte);
 
 void HallSendBuffer(uint8_t * buffer, uint32_t count)
 {
@@ -60,10 +78,18 @@ void reset_hall_stick( void )
   HallSendBuffer( HallCmd, 6);
 }
 
+static void on_idle_cb(void*ctx) {
+  uint8_t data = 0U;
+  while (ESPUartSerialDriver.getByte(ctx, &data)) {
+    flysky_hall_process_byte(data);
+  }
+}
+
 static StaticTask_t rx_task_buf;
 EXT_RAM_BSS_ATTR static rmt_ctx_t ctxbuf;
 void flysky_hall_stick_init()
 {
+#if 0
   /* Why use RMT instead of UART?
    * 1. for fun
    * 2. don't need to worry about finding a pin for TX which is not used.
@@ -77,6 +103,10 @@ void flysky_hall_stick_init()
     900 // FlySky hall stick communicates at a little bit less that 1Mbps. So minimum pulse is around 1000ns
     );
   reset_hall_stick();
+#else
+  ESPUartSerialDriver.init((void *)&gimbal_uart_hw_def, &param);
+  ESPUartSerialDriver.setIdleCb((void*)gimbal_uart_hw_def.uart_port, on_idle_cb, (void*)gimbal_uart_hw_def.uart_port);
+#endif
 }
 
 void Parse_Character(STRUCT_HALL *hallBuffer, unsigned char ch)
@@ -134,6 +164,8 @@ void Parse_Character(STRUCT_HALL *hallBuffer, unsigned char ch)
       if (hallBuffer->checkSum ==
           crc16(CRC_1021, &hallBuffer->head, hallBuffer->length + 3, 0xffff)) {
         hallBuffer->msg_OK = 1;
+      } else {
+        TRACE("CRC");
       }
       hallBuffer->status = GET_START;
     }

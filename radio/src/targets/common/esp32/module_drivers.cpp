@@ -24,6 +24,7 @@
 #include "hal/module_port.h"
 #include "dataconstants.h"
 #include "debug.h"
+#include "esp32_uart_driver.h"
 
 void intmoduleStop() {}
 void intmoduleFifoError() {}
@@ -128,6 +129,14 @@ const etx_timer_driver_t _fakeTimerDriver = {
 extern etx_serial_driver_t IntmoduleSerialDriver;
 
 #if defined(HARDWARE_INTERNAL_MODULE)
+static const etx_esp32_uart_hw_def_t intmod_uart_hw_def = {
+    .uart_port = INTMOD_UART_PORT,
+    .rx_pin = INTMOD_ESP_UART_RX,
+    .tx_pin = INTMOD_ESP_UART_TX,
+    .fifoSize = 4096,
+    .queueSize = 10
+};
+
 const etx_module_port_t _internal_ports[] = {
 #if defined(INTMODULE_USART)
   {
@@ -142,8 +151,8 @@ const etx_module_port_t _internal_ports[] = {
     .port = ETX_MOD_PORT_UART,
     .type = ETX_MOD_TYPE_SERIAL,
     .dir_flags = ETX_MOD_DIR_TX_RX | ETX_MOD_FULL_DUPLEX,
-    .drv = { .serial = &IntmoduleSerialDriver },
-    .hw_def = nullptr,
+    .drv = { .serial = &ESPUartSerialDriver },
+    .hw_def = (void *)&intmod_uart_hw_def,
   },
 #endif
 #if defined(INTERNAL_MODULE_PXX1)

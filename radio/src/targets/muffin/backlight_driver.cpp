@@ -7,6 +7,7 @@
 #endif
 
 #include "lvgl_helpers.h"
+#include "driver/gpio.h"
 
 #define MIN_PWM_DUTY_CYCLE 100
 #define BLITE_OFF_DUTY_CYCLE 50

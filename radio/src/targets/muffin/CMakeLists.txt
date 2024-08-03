@@ -73,7 +73,6 @@ if(INTERNAL_MODULE_SERIAL)
   endif()
   set(TARGET_SRC
     ${TARGET_SRC}
-    #../common/arm/stm32/intmodule_serial_driver.cpp
     )
 elseif(INTERNAL_MODULE_PXX1 OR INTERNAL_MODULE_PXX2)
   set(TARGET_SRC
@@ -114,10 +113,6 @@ if(INTERNAL_MODULE_MULTI)
   add_definitions(-DHARDWARE_INTERNAL_MODULE)
   add_definitions(-DINTERNAL_MODULE_MULTI)
   add_definitions(-DINTERNAL_MODULE_SERIAL_TELEMETRY)
-  set(TARGET_SRC
-    ${TARGET_SRC}
-    ../common/esp32/intmodule_serial_driver.cpp
-    )
 endif()
 
 if(ROTARY_ENCODER)
@@ -269,7 +264,7 @@ set(TARGET_SRC
   ../common/esp32/watchdog_driver.cpp
   ../common/esp32/usb_driver.cpp
   ../common/esp32/i2c_driver.cpp
-  ../common/esp32/intmodule_serial_driver.cpp
+  ../common/esp32/esp32_uart_driver.cpp
   #../common/arm/stm32/audio_dac_driver.cpp
   #../common/esp32/adc_hal_driver.cpp
   #../common/arm/stm32/heartbeat_driver.cpp
@@ -304,10 +299,6 @@ if(INTERNAL_MODULE_ELRS)
   add_definitions(-DINTERNAL_MODULE_ELRS)
   add_definitions(-DINTERNAL_MODULE_SERIAL_TELEMETRY)
   set(INTERNAL_MODULE_MULTI NO)
-  set(TARGET_SRC
-    ${TARGET_SRC}
-    #../common/esp32/intmodule_serial_driver.cpp
-    )
 endif()
 
 set(TARGET_SRC

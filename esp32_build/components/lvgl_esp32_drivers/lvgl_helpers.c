@@ -50,7 +50,7 @@
  **********************/
 
 /* Interface and driver initialization */
-void lvgl_driver_init(lv_disp_drv_t *disp_drv)
+void lvgl_driver_init(void)
 {
     /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
      * print it only if they are defined. */
@@ -69,10 +69,10 @@ void lvgl_driver_init(lv_disp_drv_t *disp_drv)
         DISP_SPI_IO2, DISP_SPI_IO3);
 
     disp_spi_add_device(TFT_SPI_HOST);
-    disp_driver_init(disp_drv);
+    disp_driver_init();
 
 #if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
-    touch_driver_init(disp_drv);
+    touch_driver_init();
 #endif
 
     return;
@@ -89,7 +89,7 @@ void lvgl_driver_init(lv_disp_drv_t *disp_drv)
     disp_spi_add_device(TFT_SPI_HOST);
     tp_spi_add_device(TOUCH_SPI_HOST);
 
-    disp_driver_init(disp_drv);
+    disp_driver_init();
     touch_driver_init();
 
     return;
@@ -106,11 +106,11 @@ void lvgl_driver_init(lv_disp_drv_t *disp_drv)
 
     disp_spi_add_device(TFT_SPI_HOST);
 
-    disp_driver_init(disp_drv);
+    disp_driver_init();
 #elif defined (CONFIG_LV_I2C_DISPLAY)
-    disp_driver_init(disp_drv);
+    disp_driver_init();
 #elif defined (CONFIG_LV_TFT_DISPLAY_PROTOCOL_MCU)
-    disp_driver_init(disp_drv);
+    disp_driver_init();
 #else
 #error "No protocol defined for display controller"
 #endif

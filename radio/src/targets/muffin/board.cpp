@@ -86,7 +86,6 @@ LayoutFactory *layouts[20] = {
 };
 #endif
 
-extern lv_disp_drv_t disp_drv;
 void boardInit()
 {
   /* Initialize NVS — it is used to store PHY calibration data */
@@ -100,8 +99,6 @@ void boardInit()
   //nimble_port_init();
 
   board_init_i2c();
-  lv_init();
-  lvgl_driver_init(&disp_drv);
 
   keysInit();
   rtcInit();
@@ -116,7 +113,7 @@ void boardInit()
   audioInit();
 
   ads1015_adc_init();
-  toplcdInit();
+  //toplcdInit();
 }
 
 void boardOff()

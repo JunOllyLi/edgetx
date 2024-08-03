@@ -20,7 +20,7 @@
 #include "esp_check.h"
 #include "ili9488.h"
 
-static uint8_t *mybuf;
+static uint8_t *dmabuf;
 
 typedef struct {
     uint8_t cmd;
@@ -157,6 +157,9 @@ static esp_err_t panel_ili9488_reset(esp_lcd_panel_t *panel)
 
 static esp_err_t panel_ili9488_init(esp_lcd_panel_t *panel)
 {
+    ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
+    esp_lcd_panel_io_handle_t io = ili9488->io;
+
 	lcd_init_cmd_t ili_init_cmds[]={
         {ILI9488_CMD_SLEEP_OUT, {0x05}, 0x80},
 		{ILI9488_CMD_POSITIVE_GAMMA_CORRECTION, {0x00, 0x03, 0x09, 0x08, 0x16, 0x0A, 0x3F, 0x78, 0x4C, 0x09, 0x0A, 0x08, 0x16, 0x1A, 0x0F}, 15},
@@ -164,7 +167,7 @@ static esp_err_t panel_ili9488_init(esp_lcd_panel_t *panel)
 		{ILI9488_CMD_POWER_CONTROL_1, {0x17, 0x15}, 2},
 		{ILI9488_CMD_POWER_CONTROL_2, {0x41}, 1},
 		{ILI9488_CMD_VCOM_CONTROL_1, {0x00, 0x12, 0x80}, 3},
-		{ILI9488_CMD_MEMORY_ACCESS_CONTROL, {(0x20 | 0x08)}, 1},
+		{ILI9488_CMD_MEMORY_ACCESS_CONTROL, {ili9488->madctl_val}, 1},
 		{ILI9488_CMD_COLMOD_PIXEL_FORMAT_SET, {0x55}, 1},
 		{ILI9488_CMD_DISP_INVERSION_ON, {0x00}, 1},
 		{ILI9488_CMD_INTERFACE_MODE_CONTROL, {0x00}, 1},
@@ -178,9 +181,6 @@ static esp_err_t panel_ili9488_init(esp_lcd_panel_t *panel)
 		{ILI9488_CMD_DISPLAY_ON, {0x00}, 0x80},
 		{0, {0}, 0xff},
 	};
-
-    ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
-    esp_lcd_panel_io_handle_t io = ili9488->io;
 
   	const lcd_init_cmd_t *pcmd = ili_init_cmds;
 	  uint8_t        cmd, x, numArgs;
@@ -199,12 +199,17 @@ static esp_err_t panel_ili9488_init(esp_lcd_panel_t *panel)
 		    }
         pcmd++;
 	  }
-
+#if defined CONFIG_LV_DISPLAY_ORIENTATION_LANDSCAPE
+    esp_lcd_panel_swap_xy(panel, true);
+#endif
+#if defined(LV_DISPLAY_ORIENTATION_LANDSCAPE_INVERTED) || defined(LV_DISPLAY_ORIENTATION_PORTRAIT_INVERTED)
+    panel_ili9488_mirror(panel, true, true);
+#endif
 
     do {
-        mybuf = (uint8_t *) heap_caps_malloc(DISP_BUF_SIZE * 3, MALLOC_CAP_DMA);
-        if (mybuf == NULL)  ESP_LOGW(TAG, "Could not allocate enough DMA memory!");
-    } while (mybuf == NULL);
+        dmabuf = (uint8_t *) heap_caps_malloc(DISP_BUF_SIZE * sizeof(lv_color16_t), MALLOC_CAP_DMA);
+        if (dmabuf == NULL)  ESP_LOGW(TAG, "Could not allocate enough DMA memory!");
+    } while (dmabuf == NULL);
     return ESP_OK;
 }
 
@@ -213,10 +218,6 @@ static esp_err_t panel_ili9488_draw_bitmap(esp_lcd_panel_t *panel, int x_start, 
     ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
     assert((x_start < x_end) && (y_start < y_end) && "start position must be smaller than end position");
     esp_lcd_panel_io_handle_t io = ili9488->io;
-
-    uint32_t size = (x_end - x_start) * (y_end - y_start);
-
-    lv_color16_t *buffer_16bit = (lv_color16_t *) color_data;
 
     x_start += ili9488->x_gap;
     x_end += ili9488->x_gap;
@@ -238,8 +239,8 @@ static esp_err_t panel_ili9488_draw_bitmap(esp_lcd_panel_t *panel, int x_start, 
     }, 4);
     // transfer frame buffer
     size_t len = (x_end - x_start) * (y_end - y_start) * ili9488->fb_bits_per_pixel / 8;
-    memcpy(mybuf, color_data, len);
-    esp_lcd_panel_io_tx_color(io, ILI9488_CMD_MEMORY_WRITE, mybuf, len);
+    memcpy(dmabuf, color_data, len);
+    esp_lcd_panel_io_tx_color(io, ILI9488_CMD_MEMORY_WRITE, dmabuf, len);
 
     return ESP_OK;
 }
@@ -248,17 +249,13 @@ static esp_err_t panel_ili9488_invert_color(esp_lcd_panel_t *panel, bool invert_
 {
     ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
     esp_lcd_panel_io_handle_t io = ili9488->io;
-#if 0
     int command = 0;
     if (invert_color_data) {
-        command = LCD_CMD_INVON;
+        command = ILI9488_CMD_DISP_INVERSION_ON;
     } else {
-        command = LCD_CMD_INVOFF;
+        command = ILI9488_CMD_DISP_INVERSION_OFF;
     }
     esp_lcd_panel_io_tx_param(io, command, NULL, 0);
-#else
-    ESP_LOGI(TAG, "panel_ili9488_invert_color");
-#endif
     return ESP_OK;
 }
 
@@ -266,7 +263,7 @@ static esp_err_t panel_ili9488_mirror(esp_lcd_panel_t *panel, bool mirror_x, boo
 {
     ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
     esp_lcd_panel_io_handle_t io = ili9488->io;
-#if 0
+
     if (mirror_x) {
         ili9488->madctl_val |= LCD_CMD_MX_BIT;
     } else {
@@ -280,9 +277,6 @@ static esp_err_t panel_ili9488_mirror(esp_lcd_panel_t *panel, bool mirror_x, boo
     esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
         ili9488->madctl_val
     }, 1);
-#else
-    ESP_LOGI(TAG, "panel_ili9488_mirror");
-#endif
     return ESP_OK;
 }
 
@@ -290,7 +284,6 @@ static esp_err_t panel_ili9488_swap_xy(esp_lcd_panel_t *panel, bool swap_axes)
 {
     ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
     esp_lcd_panel_io_handle_t io = ili9488->io;
-#if 0
     if (swap_axes) {
         ili9488->madctl_val |= LCD_CMD_MV_BIT;
     } else {
@@ -299,9 +292,6 @@ static esp_err_t panel_ili9488_swap_xy(esp_lcd_panel_t *panel, bool swap_axes)
     esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t[]) {
         ili9488->madctl_val
     }, 1);
-#else
-    ESP_LOGI(TAG, "panel_ili9488_swap_xy");
-#endif
     return ESP_OK;
 }
 
@@ -317,7 +307,6 @@ static esp_err_t panel_ili9488_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
 {
     ili9488_panel_t *ili9488 = __containerof(panel, ili9488_panel_t, base);
     esp_lcd_panel_io_handle_t io = ili9488->io;
-#if 0
     int command = 0;
     if (!on_off) {
         command = LCD_CMD_DISPOFF;
@@ -325,8 +314,5 @@ static esp_err_t panel_ili9488_disp_on_off(esp_lcd_panel_t *panel, bool on_off)
         command = LCD_CMD_DISPON;
     }
     esp_lcd_panel_io_tx_param(io, command, NULL, 0);
-#else
-    ESP_LOGI(TAG, "panel_ili9488_disp_on_off");
-#endif
     return ESP_OK;
 }

@@ -90,26 +90,72 @@ static esp_lcd_panel_io_i80_config_t io_config = {
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static esp_lcd_panel_dev_config_t panel_config = {
     .reset_gpio_num = CONFIG_LV_TFT_MCU_RST_NUM,
-    .color_space = ESP_LCD_COLOR_SPACE_RGB,
+    .color_space = ESP_LCD_COLOR_SPACE_BGR,
     .bits_per_pixel = 16,
 };
 
+
+static struct mcu_panel_draw_ctx_t {
+    lv_area_t area;
+    lv_color_t *color_map;
+    lv_disp_drv_t *drv;
+    int width;
+    int y;
+    lv_color_t *next_stripe;
+    int max_rows;
+    bool done;
+    bool next;
+} draw_ctx;
+
+static void flush_next_stripe(struct mcu_panel_draw_ctx_t *ctx) {
+    lv_area_t area = {.x1= ctx->area.x1, .x2= ctx->area.x2, .y1= ctx->y};
+    lv_color_t *pcolor = ctx->next_stripe;
+
+    int h = ctx->area.y2 - ctx->y;
+    if (h > ctx->max_rows) h = ctx->max_rows;
+
+    ctx->y += h;
+    area.y2 = ctx->y;
+    ctx->next_stripe += (ctx->width * h);
+    //ESP_LOGI("DIS", "area %d %d %d %d h %d w %d", area.x1, area.y1, area.x2, area.y2, h, ctx->width);
+    draw_ctx.next = false;
+    esp_lcd_panel_draw_bitmap(panel_handle, area.x1, area.y1, area.x2, area.y2, pcolor);
+}
+
 static bool mcu_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
-    lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
-    lv_disp_flush_ready(disp_driver);
+    struct mcu_panel_draw_ctx_t *ctx = &draw_ctx;
+    if (ctx->y >= ctx->area.y2) {
+        draw_ctx.done = true;
+        draw_ctx.next = true;
+        if (NULL != ctx->drv) {
+            lv_disp_flush_ready(ctx->drv);
+        }
+    } else {
+        draw_ctx.next = true;
+    }
     return false;
 }
 
 void lcd_mcu_lvgl_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map)
 {
-    // use the static one esp_lcd_panel_handle_t panel_handle = (esp_lcd_panel_handle_t) drv->user_data;
-    int offsetx1 = area->x1;
-    int offsetx2 = area->x2;
-    int offsety1 = area->y1;
-    int offsety2 = area->y2;
-    // copy a buffer's content to a specific area of the display
-    esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, color_map);
+    draw_ctx.area.x1=area->x1;
+    draw_ctx.area.y1=area->y1;
+    draw_ctx.area.x2=area->x2;
+    draw_ctx.area.y2=area->y2;
+    draw_ctx.color_map = color_map;
+    draw_ctx.drv = drv;
+
+    draw_ctx.next_stripe = color_map;
+    draw_ctx.width = draw_ctx.area.x2 - draw_ctx.area.x1;
+    draw_ctx.max_rows = DISP_BUF_SIZE / draw_ctx.width;
+    draw_ctx.y = 0;
+    draw_ctx.done = false;
+
+    do {
+        flush_next_stripe(&draw_ctx);
+        while(!draw_ctx.next);
+    } while(!draw_ctx.done);
 }
 
 #if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_HX8357
@@ -118,10 +164,8 @@ extern esp_err_t esp_lcd_new_panel_hx8357(const esp_lcd_panel_io_handle_t io, co
 extern esp_err_t esp_lcd_new_panel_ili9488(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel);
 #endif
 
-void disp_mcu_panel_init(lv_disp_drv_t *disp_drv) {
+void disp_mcu_panel_init(void) {
     ESP_LOGI(TAG, "Initialize Intel 8080 bus");
-
-    io_config.user_ctx = disp_drv; // for the flush_ready cb
 
     ESP_ERROR_CHECK(esp_lcd_new_i80_bus(&bus_config, &i80_bus));
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i80(i80_bus, &io_config, &io_handle));

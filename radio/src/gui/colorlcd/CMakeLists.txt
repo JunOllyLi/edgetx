@@ -15,10 +15,7 @@ file(GLOB LAYOUTS_SRC RELATIVE ${RADIO_SRC_DIR}/gui/colorlcd
 file(GLOB WIDGETS_SRC RELATIVE ${RADIO_SRC_DIR}/gui/colorlcd
   ${RADIO_SRC_DIR}/gui/colorlcd/widgets/*.cpp)
 
-if(ESP_PLATFORM)
-else()
 set(LCD_SRC_F lcd.cpp)
-endif()
 
 set(GUI_SRC
   ${GUI_SRC}

@@ -276,7 +276,6 @@ set(TARGET_SRC
   ../common/esp32/mixer_scheduler_driver.cpp
   ../common/esp32/pulses_espnow.cpp
 
-  ../simu/simulcd.cpp
   )
 
 set(TARGET_SRC

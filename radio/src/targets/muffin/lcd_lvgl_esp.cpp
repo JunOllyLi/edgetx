@@ -43,143 +43,21 @@ extern "C" {
 #include "lvgl_helpers.h"
 }
 
-#if !defined(ESP_PLATFORM)
-pixel_t LCD_FIRST_FRAME_BUFFER[DISPLAY_BUFFER_SIZE] __SDRAM;
-pixel_t LCD_SECOND_FRAME_BUFFER[DISPLAY_BUFFER_SIZE] __SDRAM;
-BitmapBuffer lcdBuffer1(BMP_RGB565, LCD_W, LCD_H, (uint16_t *)LCD_FIRST_FRAME_BUFFER);
-BitmapBuffer lcdBuffer2(BMP_RGB565, LCD_W, LCD_H, (uint16_t *)LCD_SECOND_FRAME_BUFFER);
-BitmapBuffer * lcdFront = &lcdBuffer1;
-BitmapBuffer * lcd = &lcdBuffer2;
-#else
-extern uint32_t _ext_ram_bss_start;
-pixel_t *LCD_FIRST_FRAME_BUFFER;
-pixel_t *LCD_SECOND_FRAME_BUFFER;
-
-//BitmapBuffer * lcdFront = NULL;
-BitmapBuffer * lcd = NULL;
-#endif
-
-
-extern BitmapBuffer * lcdFront;
-extern BitmapBuffer * lcd;
-
-lv_disp_drv_t disp_drv;
-static lv_disp_draw_buf_t disp_buf;
-static lv_disp_t* disp = nullptr;
-static lv_indev_drv_t indev_drv;
-void lcd_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map);
-void lcdInitDisplayDriver()
-{
-    lv_color_t* buf1 = (lv_color_t*)malloc(320*480 * sizeof(lv_color_t));
-    assert(buf1 != NULL);
-
-    /* Use double buffered when not working with monochrome displays */
-#ifndef CONFIG_LV_TFT_DISPLAY_MONOCHROME
-    lv_color_t* buf2 = (lv_color_t*)malloc(320*480 * sizeof(lv_color_t));
-#else
-    static lv_color_t *buf2 = NULL;
-#endif
-
-    uint32_t size_in_px = 320*480;
-
-#if defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_IL3820         \
-    || defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_JD79653A    \
-    || defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_UC8151D     \
-    || defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
-
-    /* Actual size in pixels, not bytes. */
-    size_in_px *= 8;
-#endif
-
-    /* Initialize the working buffer depending on the selected display.
-     * NOTE: buf2 == NULL when using monochrome displays. */
-    lv_disp_draw_buf_init(&disp_buf, buf1, buf2, size_in_px);
-
-    lv_disp_drv_init(&disp_drv);
-    disp_drv.flush_cb = lcd_flush_cb;
-
-#if defined CONFIG_DISPLAY_ORIENTATION_PORTRAIT || defined CONFIG_DISPLAY_ORIENTATION_PORTRAIT_INVERTED
-    disp_drv.rotated = 1;
-#endif
-
-    /* When using a monochrome display we need to register the callbacks:
-     * - rounder_cb
-     * - set_px_cb */
-#ifdef CONFIG_LV_TFT_DISPLAY_MONOCHROME
-    disp_drv.rounder_cb = disp_driver_rounder;
-    disp_drv.set_px_cb = disp_driver_set_px;
-#endif
-
-    disp_drv.hor_res = LV_HOR_RES_MAX;
-    disp_drv.ver_res = LV_VER_RES_MAX;
-    disp_drv.draw_buf = &disp_buf;
-    disp = lv_disp_drv_register(&disp_drv);
-
-    lv_disp_set_default(disp);
-
-    // remove all styles on default screen (makes it transparent as well)
-    lv_obj_remove_style_all(lv_scr_act());
-
-    // transparent background:
-    //  - this prevents LVGL overwritting things drawn directly into the bitmap buffer
-    lv_disp_set_bg_opa(disp, LV_OPA_TRANSP);
-
-    // allow drawing at any moment
-    _lv_refr_set_disp_refreshing(disp);
-
-#if defined(ESP_PLATFORM)
-  //lcdFront = new BitmapBuffer(BMP_RGB565, LCD_W, LCD_H);
-  lcd = new BitmapBuffer(BMP_RGB565, LCD_W, LCD_H,
-      (uint16_t *)malloc(align32(LCD_W * LCD_H * sizeof(uint16_t))));
-#endif
-
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.read_cb = touch_driver_read;
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  lv_indev_drv_register(&indev_drv);
+static void lcd_flush(lv_disp_drv_t *drv, uint16_t*color_map, const rect_t& rect) {
+  lv_area_t area = {.x1=(lv_coord_t)rect.left(), .y1=(lv_coord_t)rect.top(), .x2=(lv_coord_t)rect.right(), .y2=(lv_coord_t)rect.bottom()};
+  disp_driver_flush(drv, &area, (lv_color_t *)color_map);
 }
 
-#define DISPBUF_LINES (DISP_BUF_SIZE / LV_HOR_RES_MAX)
-#define PIXEL_EACHBLOCK (LV_HOR_RES_MAX * DISPBUF_LINES)
-void lcdRefresh() {
-  lv_area_t area = {.x1 = 0, .y1 = 0, .x2 = LV_HOR_RES_MAX - 1, .y2 = DISPBUF_LINES - 1};
-  lcd_flush_cb(&disp_drv, &area, (lv_color_t *)lcd->getData());
-}
-
-void lcd_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color_map) {
-  lv_color_t *p = color_map;
-  lv_area_t myarea = {.x1=area->x1, .y1=area->y1, .x2=area->x2, .y2=area->y1};
-  while (myarea.y2 < area->y2) {
-    int lines = area->y2 - myarea.y1;
-    if (lines > DISPBUF_LINES) lines = DISPBUF_LINES;
-    myarea.y2 = myarea.y1 + lines;
-
-    disp_driver_flush(&disp_drv, &myarea, p);
-    myarea.y1 += lines;
-    p += PIXEL_EACHBLOCK; // OK to be added pass the end at the end of drawing
-  }
-}
-
-void lcdInitDirectDrawing() {
-}
-
-/*
-  Starts LCD initialization routine. It should be called as
-  soon as possible after the reset because LCD takes a lot of
-  time to properly power-on.
-
-  Make sure that delay_ms() is functional before calling this function!
-*/
 void lcdInit()
 {
+  lvgl_driver_init();
+  lcdSetFlushCb(lcd_flush);
 }
 
 static TouchState internalTouchState = {0};
 struct TouchState getInternalTouchState() {
   return internalTouchState;
 }
-
-static int state = 0;
 
 struct TouchState touchPanelRead() {
   return internalTouchState;
@@ -190,13 +68,12 @@ bool touchPanelEventOccured() {
   return ret;
 }
 
+static lv_indev_drv_t indev_drv;
 bool touchPanelInit(void) {
-    /* Register an input device when enabled on the menuconfig */
-  //lv_indev_drv_t indev_drv;
-  //lv_indev_drv_init(&indev_drv);
-  //indev_drv.read_cb = touch_driver_read;
-  //indev_drv.type = LV_INDEV_TYPE_POINTER;
-  //lv_indev_drv_register(&indev_drv);
+  lv_indev_drv_init(&indev_drv);
+  indev_drv.read_cb = touch_driver_read;
+  indev_drv.type = LV_INDEV_TYPE_POINTER;
+  lv_indev_drv_register(&indev_drv);
 
   return true;
 }

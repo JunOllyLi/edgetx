@@ -30,11 +30,11 @@ void toplcdInit()
   sh1107_init();
 #endif
 }
-
+#if 0
 void toplcdOff()
 {
 }
-
+#endif
 void setTopFirstTimer(int32_t value)
 {
 }

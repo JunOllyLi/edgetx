@@ -25,21 +25,12 @@
 #include "bitmapbuffer.h"
 #include <lvgl/lvgl.h>
 
-#if !defined(ESP_PLATFORM)
 pixel_t LCD_FIRST_FRAME_BUFFER[DISPLAY_BUFFER_SIZE] __SDRAM;
 pixel_t LCD_SECOND_FRAME_BUFFER[DISPLAY_BUFFER_SIZE] __SDRAM;
 BitmapBuffer lcdBuffer1(BMP_RGB565, LCD_W, LCD_H, (uint16_t *)LCD_FIRST_FRAME_BUFFER);
 BitmapBuffer lcdBuffer2(BMP_RGB565, LCD_W, LCD_H, (uint16_t *)LCD_SECOND_FRAME_BUFFER);
 BitmapBuffer * lcdFront = &lcdBuffer1;
 BitmapBuffer * lcd = &lcdBuffer2;
-#else
-extern uint32_t _ext_ram_bss_start;
-pixel_t *LCD_FIRST_FRAME_BUFFER;
-pixel_t *LCD_SECOND_FRAME_BUFFER;
-
-BitmapBuffer * lcdFront = NULL;
-BitmapBuffer * lcd = NULL;
-#endif
 
 
 extern BitmapBuffer * lcdFront;
@@ -155,11 +146,9 @@ void lcdInitDisplayDriver()
 
   lv_init();
 
-#if !defined(ESP_PLATFORM)
   // Clear buffers first
   memset(LCD_FIRST_FRAME_BUFFER, 0, DISPLAY_BUFFER_SIZE * sizeof(pixel_t));
   memset(LCD_SECOND_FRAME_BUFFER, 0, DISPLAY_BUFFER_SIZE * sizeof(pixel_t));
-#endif
 
   // Init hardware LCD driver
   lcdInit();
@@ -184,10 +173,6 @@ void lcdInitDisplayDriver()
   disp = lv_disp_drv_register(&disp_drv);
 
   lv_disp_set_default(disp);
-#if defined(ESP_PLATFORM)
-  lcdFront = new BitmapBuffer(BMP_RGB565, LCD_W, LCD_H);
-  lcd = new BitmapBuffer(BMP_RGB565, LCD_W, LCD_H);
-#endif
   lv_disp_draw_buf_init(&disp_buf, lcdFront->getData(), lcd->getData(), LCD_W*LCD_H);
   disp_drv.draw_buf = &disp_buf;          /*Set an initialized buffer*/
 

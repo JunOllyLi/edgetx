@@ -52,7 +52,7 @@ extern "C" {
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9486
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 80)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
@@ -94,13 +94,13 @@ extern "C" {
 void lvgl_i2c_locking(void* leader);
 
 /* Initialize detected SPI and I2C bus and devices */
-void lvgl_driver_init(lv_disp_drv_t *disp_drv);
+void lvgl_driver_init(void);
 
 /* Initialize SPI master  */
 bool lvgl_spi_driver_init(int host, int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz, int dma_channel, int quadwp_pin, int quadhd_pin);
 
-void disp_mcu_panel_init(lv_disp_drv_t *disp_drv);
+void disp_mcu_panel_init(void);
 
 /**********************
  *      MACROS

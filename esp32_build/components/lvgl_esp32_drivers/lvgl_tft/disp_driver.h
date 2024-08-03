@@ -69,7 +69,7 @@ extern "C" {
  **********************/
 
 /* Initialize display */
-void *disp_driver_init(lv_disp_drv_t *disp_drv);
+void *disp_driver_init(void);
 
 /* Display flush callback */
 void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);

@@ -8,10 +8,10 @@
 #include "sdkconfig.h"
 #include "disp_mcu.h"
 
-void *disp_driver_init(lv_disp_drv_t *disp_drv)
+void *disp_driver_init(void)
 {
 #if defined CONFIG_LV_TFT_DISPLAY_PROTOCOL_MCU
-    disp_mcu_panel_init(disp_drv);
+    disp_mcu_panel_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
     ili9341_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481

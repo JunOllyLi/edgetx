@@ -26,80 +26,88 @@
 #include <stdlib.h>
 #include <assert.h>
 
-struct hw_switch_def {
-  const char*  name;
-  SwitchHwType type;
+struct mcp_switch_t
+{
+    const char*   name;
+    uint32_t      bit_high;
+    uint32_t      bit_low;
+
+    SwitchHwType type;
+    uint8_t      flags;
 };
 
-//#include "simu_switches.inc"
+#include "mcp23017_switches.inc"
 
-int8_t switchesStates[MAX_SWITCHES] = { -1 };
-
-void simuSetSwitch(uint8_t swtch, int8_t state)
-{
-  assert(swtch < switchGetMaxSwitches() + switchGetMaxFctSwitches());
-  switchesStates[swtch] = state;
-}
+extern uint32_t ShadowInput;  // from mcp23017
 
 void boardInitSwitches() {}
 
 static uint8_t get_switch_index(uint8_t cat, uint8_t idx)
 {
-#if 0
-  switch(cat) {
-  case SWITCH_PHYSICAL:
-    assert(idx < n_switches);
-    return idx;
+    switch(cat) {
+    case SWITCH_PHYSICAL:
+        assert(idx < n_switches);
+        return idx;
 
-  case SWITCH_FUNCTION:
-    assert(idx < n_fct_switches);
-    return idx + n_switches;
+    case SWITCH_FUNCTION:
+        assert(idx < n_fct_switches);
+        return idx + n_switches;
 
-  default:
-    assert(0);
-    return 0;
-  }
-#else
-return 0;
-#endif
+    default:
+        assert(0);
+        return 0;
+    }
 }
 
 SwitchHwPos boardSwitchGetPosition(uint8_t cat, uint8_t idx)
 {
-#if 0
-  idx = get_switch_index(cat, idx);
+    idx = get_switch_index(cat, idx);
+    const mcp_switch_t *sw = &_switch_defs[idx];
+    bool inv = sw->flags & SWITCH_HW_INVERTED;
+    SwitchHwPos ret = SWITCH_HW_UP;
 
-  if (switchesStates[idx] < 0)
-    return SWITCH_HW_UP;
-  else if (switchesStates[idx] == 0)
-    return SWITCH_HW_MID;
-  else
-    return SWITCH_HW_DOWN;
-#else
-  return SWITCH_HW_MID;
-#endif
+    switch (sw->type) {
+    case SWITCH_HW_2POS:
+        if (0 == (ShadowInput & sw->bit_low))
+            ret = SWITCH_HW_DOWN;
+        break;
+
+    case SWITCH_HW_3POS: {
+        auto hi = (0 == (ShadowInput & sw->bit_high));
+        auto lo = (0 == (ShadowInput & sw->bit_low));
+
+        if (!hi && !lo)
+            ret = SWITCH_HW_MID;
+        else if (!hi && lo)
+            ret = SWITCH_HW_DOWN;
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (inv) {
+        return ret == SWITCH_HW_UP     ? SWITCH_HW_DOWN
+                : (ret == SWITCH_HW_DOWN ? SWITCH_HW_UP : ret);
+    }
+
+    return ret;
 }
 
 const char* boardSwitchGetName(uint8_t cat, uint8_t idx)
 {
-  idx = get_switch_index(cat, idx);
-  return NULL;//_switch_defs[idx].name;
+    idx = get_switch_index(cat, idx);
+    return _switch_defs[idx].name;
 }
 
 SwitchHwType boardSwitchGetType(uint8_t cat, uint8_t idx)
 {
-  idx = get_switch_index(cat, idx);
-  return SWITCH_HW_3POS;//_switch_defs[idx].type;
+    idx = get_switch_index(cat, idx);
+    return _switch_defs[idx].type;
 }
 
-uint8_t boardGetMaxSwitches() { return 0; }//n_switches; }
-uint8_t boardGetMaxFctSwitches() { return 0;}//n_fct_switches; }
+uint8_t boardGetMaxSwitches() { return n_switches; }
+uint8_t boardGetMaxFctSwitches() { return n_fct_switches; }
 
-swconfig_t boardSwitchGetDefaultConfig() { return 0;}//_switch_default_config; }
+swconfig_t boardSwitchGetDefaultConfig() { return _switch_default_config; }
 
-switch_display_pos_t switchGetDisplayPosition(uint8_t idx)
-{
-  //if (idx >= DIM(_switch_display)) return {0, 0};
-
-  return {0,0};//_switch_display[idx];
-}

@@ -35,8 +35,8 @@
 //#include "nimble/nimble_port_freertos.h"
 
 #include "driver/i2c_master.h"
+#include "flyskyHallStick_driver.h"
 
-extern void flysky_hall_stick_init();
 extern void ads1015_adc_init(void);
 
 i2c_master_bus_handle_t i2c_0_bus_handle;
@@ -109,7 +109,11 @@ void boardInit()
   initWiFi();
   init2MhzTimer();
 
-  flysky_hall_stick_init();
+  if (flysky_gimbal_init()) {
+    TRACE("Flysky Hall Gimbal detected");
+  } else {
+    TRACE_ERROR("Flysky Hall Gimbal NOT detected");
+  }
   audioInit();
 
   ads1015_adc_init();

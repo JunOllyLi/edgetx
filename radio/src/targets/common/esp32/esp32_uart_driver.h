@@ -36,4 +36,17 @@ typedef struct {
 
 extern const etx_serial_driver_t ESPUartSerialDriver;
 
+typedef struct {
+    gpio_num_t rx_pin;
+    gpio_num_t tx_pin;
+
+    size_t memsize;
+    size_t rx_task_stack_size;
+    size_t resolution_hz;
+    size_t idle_threshold_in_ns;
+    size_t min_pulse_in_ns;
+} etx_rmt_uart_hw_def_t;
+
+extern const etx_serial_driver_t rmtuartSerialDriver;
+
 #endif /* _ETX_ESP32_UART_H_ */

@@ -21,8 +21,14 @@
 
 #define MCP23XXX_ADDR 0x20 //!< Default I2C Address
 
-#define MCP_PORT(pin) ((pin < 8) ? 0 : 1) //!< Determine port from pin number
-
 #define MCP23XXX_INT_ERR 255 //!< Interrupt error
+
+#define MCP_PIN(port, pin) ((port << 3) | pin)
+#define MCP_PORT(pin) (pin >> 3)
+#define MCP_HANDLE(port) mcp[(port & 0x02) >> 1]
+#define MCP_REG_ADDR(baseAddr, port) ((baseAddr << 1) | (port & 0x01))
+#define MCP_HANDLE_FOR_PIN(pin) mcp[(pin >> 4) & 0x01]
+#define MCP_REG_FOR_PIN(baseAddr, pin) ((baseAddr << 1) | ((pin >> 3) & 0x01))
+
 
 #endif

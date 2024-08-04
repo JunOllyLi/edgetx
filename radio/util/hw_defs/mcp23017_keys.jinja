@@ -3,58 +3,47 @@
 //   This file has been generated from the target's JSON hardware description
 //
 
-static inline void _init_keys()
-{
-{% for key_gpio, pins in key_gpios | dictsort %}
-  stm32_gpio_enable_clock({{ key_gpio }});
-{% endfor %}
-  LL_GPIO_InitTypeDef pinInit;
-  LL_GPIO_StructInit(&pinInit);
-  pinInit.Mode = LL_GPIO_MODE_INPUT;
-{% for key in keys %}
-  pinInit.Pin = {{ key.pin }};
-  pinInit.Pull = {{ 'LL_GPIO_PULL_UP' if key.active_low else 'LL_GPIO_PULL_DOWN' }};
-  LL_GPIO_Init({{ key.gpio }}, &pinInit);
-{% endfor %}
-}
+typedef struct {
+    uint32_t bit; // bit in uint32_t
+    uint32_t xor_bit; // for active low/high
+    uint32_t key_code_bit;
+} mcp_key_map_t;
 
-static inline uint32_t _read_keys()
-{
-  uint32_t keys = 0;
+static mcp_key_map_t key_mapping[] = {
 {% for key in keys %}
-  if ({{'!' if key.active_low }}LL_GPIO_IsInputPinSet({{ key.gpio }}, {{ key.pin }}))
-    keys |= (1 << {{ key.key }});
+    {
+        .bit = (1 << ({{ key.gpio }} * 8 + {{ key.pin }})),
+        {% if key.active_low %}
+        .xor_bit = (1 << ({{ key.gpio }} * 8 + {{ key.pin }})),
+        {% else %}
+        .xor_bit = 0,
+        {% endif %}
+        .key_code_bit = (1 << {{ key.key }})
+    },
 {% endfor %}
-  return keys;
-}
+};
 
 {% set hw_trims = trims | selectattr('dec', 'defined') | selectattr('inc', 'defined') | list %}
-static inline void _init_trims()
-{
-{% for trim_gpio, pins in trim_gpios | dictsort %}
-  stm32_gpio_enable_clock({{ trim_gpio }});
-{% endfor %}
-  LL_GPIO_InitTypeDef pinInit;
-  LL_GPIO_StructInit(&pinInit);
-  pinInit.Mode = LL_GPIO_MODE_INPUT;
+static mcp_key_map_t trim_mapping[] = {
 {% for trim in hw_trims %}
-  pinInit.Pin = {{ trim.dec.pin }};
-  pinInit.Pull = {{ 'LL_GPIO_PULL_UP' if trim.dec.active_low else 'LL_GPIO_PULL_DOWN' }};
-  LL_GPIO_Init({{ trim.dec.gpio }}, &pinInit);
-  pinInit.Pin = {{ trim.inc.pin }};
-  pinInit.Pull = {{ 'LL_GPIO_PULL_UP' if trim.inc.active_low else 'LL_GPIO_PULL_DOWN' }};
-  LL_GPIO_Init({{ trim.inc.gpio }}, &pinInit);
+    {
+        .bit = (1 << ({{ trim.dec.gpio }} * 8 + {{ trim.dec.pin }})),
+        {% if trim.dec.active_low %}
+        .xor_bit = (1 << ({{ trim.dec.gpio }} * 8 + {{ trim.dec.pin }})),
+        {% else %}
+        .xor_bit = 0,
+        {% endif %}
+        .key_code_bit = (1 << {{ loop.index0 * 2 }})
+    },
+    {
+        .bit = (1 << ({{ trim.inc.gpio }} * 8 + {{ trim.inc.pin }})),
+        {% if trim.inc.active_low %}
+        .xor_bit = (1 << ({{ trim.inc.gpio }} * 8 + {{ trim.inc.pin }})),
+        {% else %}
+        .xor_bit = 0,
+        {% endif %}
+        .key_code_bit = (1 << {{ loop.index0 * 2 + 1 }})
+    },
 {% endfor %}
-}
+};
 
-static inline uint32_t _read_trims()
-{
-  uint32_t trims = 0;
-{% for trim in hw_trims %}
-  if ({{'!' if trim.dec.active_low }}LL_GPIO_IsInputPinSet({{ trim.dec.gpio }}, {{ trim.dec.pin }}))
-    trims |= (1 << {{ loop.index0 * 2 }});
-  if ({{'!' if trim.inc.active_low }}LL_GPIO_IsInputPinSet({{ trim.inc.gpio }}, {{ trim.inc.pin }}))
-    trims |= (1 << {{ loop.index0 * 2 + 1 }});
-{% endfor %}
-  return trims;
-}

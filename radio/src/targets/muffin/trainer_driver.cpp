@@ -38,12 +38,14 @@ static StaticTask_t rx_task_buf;
 EXT_RAM_BSS_ATTR static rmt_ctx_t rxctxbuf;
 void init_trainer_capture()
 {
+#if 0
     rxctxbuf.task_struct = &rx_task_buf;
     rmt_recv = esp32_rmt_rx_init(&rxctxbuf, TRAINER_IN_GPIO, 64,
             RMT_PPM_IN_TICK_NS,
             ppm_trainer_decode_cb,
             MAX_TRAINER_CHANNELS,
             RMT_PPM_IDLE_THRESHOLD_NS);
+#endif
 }
 
 void stop_trainer_capture()

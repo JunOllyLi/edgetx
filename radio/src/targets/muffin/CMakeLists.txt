@@ -276,6 +276,7 @@ set(TARGET_SRC
 set(TARGET_SRC
   ${TARGET_SRC}
   ../common/esp32/esp32_rmt_pulse_driver.cpp
+  ../common/esp32/esp32_rmt_uart.cpp
 )
 
 set(FIRMWARE_TARGET_SRC
@@ -325,7 +326,7 @@ set(RADIO_DEPENDENCIES ${RADIO_DEPENDENCIES} ${BITMAPS_TARGET})
 set(HW_DESC_JSON ${FLAVOUR}.json)
 #AddHardwareDefTarget(${HW_DESC_JSON})
 AddHWGenTarget(${HW_DESC_JSON} mcp23017_keys mcp23017_keys.inc)
-#AddHWGenTarget(${HW_DESC_JSON} simu_switches simu_switches.inc)
+AddHWGenTarget(${HW_DESC_JSON} mcp23017_switches mcp23017_switches.inc)
 AddHWGenTarget(${HW_DESC_JSON} hal_adc_inputs hal_adc_inputs.inc)
 AddHWGenTarget(${HW_DESC_JSON} ads1015_adc_inputs ads1015_adc_inputs.inc)
 
@@ -333,6 +334,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(board_lib OBJECT EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_BINARY_DIR}/mcp23017_keys.inc
+  ${CMAKE_CURRENT_BINARY_DIR}/mcp23017_switches.inc
   ${CMAKE_CURRENT_BINARY_DIR}/hal_adc_inputs.inc
   ${CMAKE_CURRENT_BINARY_DIR}/ads1015_adc_inputs.inc
   ${CMAKE_CURRENT_BINARY_DIR}/${HW_DESC_JSON}

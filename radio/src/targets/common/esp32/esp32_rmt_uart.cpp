@@ -20,21 +20,207 @@
 
 #include "opentx.h"
 #include "esp32_rmt_pulse.h"
+#include "opentx.h"
+#include "esp32_uart_driver.h"
 
+#include "esp_log.h"
+#define TAG "UART"
+
+#define SAMPLES_PER_BIT 20
 typedef struct {
-    rmt_ctx_t *rx;
-    rmt_ctx_t *tx;
+    rmt_ctx_t rx;
+    rmt_ctx_t tx;
+    etx_rmt_uart_hw_def_t hw_def;
     etx_serial_init params;
     uint8_t bits_in_frame;
     uint8_t data_bits;
+    StaticTask_t rx_task_buf;
+
+    RingbufHandle_t rxRing;
+
+    int data_width;
+    int info_width; // number of bits of data + parity
+    int total_width; // number of bits of data + parity + stop
+    int parity;  // -1 means no parity, 0 means even, 1 means odd
+
+    int bit_num;
+    uint32_t currentByte;
+    int count_ones;
+
+    void (*on_idle_cb)(void *);
+    void *on_idle_cb_param;
 } rmt_uart_t;
 
-static void* esp32_rmt_uart_init(const etx_serial_init* params, int pin) {
-    rmt_uart_t *rvalue = (rmt_uart_t *)malloc(sizeof(rmt_uart_t));
+static void rmt_uart_rx_reset_byte(rmt_uart_t *ctx) {
+    ctx->bit_num = -1;
+    ctx->currentByte = 0;
+    ctx->count_ones = 0;
+}
+
+static void rmt_uart_decode_next_symbel(rmt_uart_t *ctx, uint16_t duration, uint16_t level) {
+    size_t dur = duration;
+    dur *= ctx->params.baudrate;
+    int bit_count_in_sym =  (dur / ctx->hw_def.resolution_hz) +
+            (((dur % ctx->hw_def.resolution_hz) << 1) / ctx->hw_def.resolution_hz);  // round to closest
+
+    if (ctx->bit_num == -1) {
+        if (1 == level) {
+            // still waiting for start, do nothing
+        } else {
+            bit_count_in_sym--; // start bit
+            ctx->bit_num = bit_count_in_sym;
+        }
+    } else {
+        if (1 == level) {
+            if ((ctx->bit_num < ctx->info_width) && (bit_count_in_sym == 0)) {
+                // recv done, means idle condition detected while the bits still pending
+                // Indicates that the rest of this byte are all 1s
+                bit_count_in_sym = ctx->total_width - ctx->bit_num;
+            }
+            if (ctx->parity != -1) {
+                size_t oc = bit_count_in_sym;
+                if (oc > ctx->info_width - ctx->bit_num) {
+                    oc = ctx->info_width - ctx->bit_num;
+                }
+                ctx->count_ones += oc;
+            }
+            ctx->currentByte |= (((1 << bit_count_in_sym) - 1) << ctx->bit_num);
+        }
+        ctx->bit_num += bit_count_in_sym;
+    }
+    //TRACE("===== %d %02X %d %d %d", ctx->bit_num, (uint8_t)(ctx->currentByte&0xFF), duration, bit_count_in_sym, level);
+    if (ctx->bit_num >= ctx->info_width) {
+        if ((ctx->parity != -1) && (((ctx->parity + ctx->count_ones) & 0x01) != 0)) {
+            TRACE_ERROR("RMT_UART parity check failed");
+        } else {
+            //TRACE("--- %04X", ctx->currentByte);
+            uint8_t d = ctx->currentByte & 0xFF;
+            xRingbufferSend(ctx->rxRing, &d, 1, portMAX_DELAY);
+            if (NULL != ctx->on_idle_cb) {
+                ctx->on_idle_cb(ctx->on_idle_cb_param);
+            }
+        }
+        rmt_uart_rx_reset_byte(ctx);
+    }
+}
+
+static void rmt_uart_decode_cb(void *ctx, rmt_rx_done_event_data_t *rxdata)
+{
+    rmt_uart_t *uart = (rmt_uart_t *)ctx;
+    //TRACE("-------- %d", rxdata->num_symbols);
+    for (size_t i = 0; i < rxdata->num_symbols; i++) {
+        rmt_uart_decode_next_symbel(uart, rxdata->received_symbols[i].duration0, rxdata->received_symbols[i].level0);
+        rmt_uart_decode_next_symbel(uart, rxdata->received_symbols[i].duration1, rxdata->received_symbols[i].level1);
+    }
+    rmt_uart_rx_reset_byte(uart);
+}
+
+static void rmtuart_setIdleCb(void* ctx, void (*on_idle)(void*), void* param) {
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+    port->on_idle_cb = on_idle;
+    port->on_idle_cb_param = param;
+}
+
+static void parse_params(rmt_uart_t *ctx, const etx_serial_init* params) {
+    switch (params->encoding) {
+    case ETX_Encoding_8N1:
+        ctx->parity = -1;
+        ctx->data_width = 8;
+        ctx->info_width = 8;
+        ctx->total_width = 9;
+        break;
+    case ETX_Encoding_8E2:
+        ctx->parity = 0;
+        ctx->data_width = 8;
+        ctx->info_width = 9;
+        ctx->total_width = 11;
+        break;
+    default:
+        break;
+    }
+}
+
+static void* rmtuartSerialStart(void *hw_def, const etx_serial_init* params)
+{
+    etx_rmt_uart_hw_def_t *hw = (etx_rmt_uart_hw_def_t *)hw_def;
+    rmt_uart_t *rvalue = (rmt_uart_t *)heap_caps_malloc(sizeof(rmt_uart_t), MALLOC_CAP_INTERNAL);
     if (NULL != rvalue) {
-	memcpy(&rvalue->params, params, sizeof(rvalue->params));
-	rvalue->rx = esp32_rmt_rx_init
+        memset(rvalue, 0, sizeof(rmt_uart_t));
+	    memcpy(&rvalue->params, params, sizeof(rvalue->params));
+	    memcpy(&rvalue->hw_def, hw, sizeof(rvalue->hw_def));
+
+        parse_params(rvalue, params);
+
+        rvalue->rxRing = xRingbufferCreate(hw->memsize, RINGBUF_TYPE_BYTEBUF);
+	    esp32_rmt_rx_init(&rvalue->rx, hw->rx_pin, hw->memsize, hw->resolution_hz, rmt_uart_decode_cb);
+
+        rmt_uart_rx_reset_byte(rvalue);
+        esp32_rmt_rx_start(&rvalue->rx, (void *)rvalue, hw->rx_task_stack_size,
+                hw->idle_threshold_in_ns, hw->min_pulse_in_ns);
     }
 
-    return rvalue;
+    return (void *)rvalue;
 }
+
+void rmtuartSendByte(void* ctx, uint8_t byte)
+{
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+}
+
+void rmtuartSendBuffer(void* ctx, const uint8_t * data, uint32_t size)
+{
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+}
+
+void rmtuartWaitForTxCompleted(void* ctx)
+{
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+}
+
+static int rmtuartGetByte(void* ctx, uint8_t* data)
+{
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+    size_t itemSize = 0;
+    uint8_t *out = (uint8_t *)xRingbufferReceive(port->rxRing, &itemSize, 0);
+    if (NULL != out) {
+        *data = *out;
+        vRingbufferReturnItem(port->rxRing, out);
+    }
+    return itemSize;
+}
+
+static void rmtuartClearRxBuffer(void* ctx)
+{
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+}
+
+static void rmtuartSerialStop(void* ctx)
+{
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+}
+
+int rmtuartGetBufferedBytes(void* ctx) {
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+    return 0;
+}
+
+int rmtuartCopyRxBuffer(void* ctx, uint8_t* buf, uint32_t len) {
+    rmt_uart_t *port = (rmt_uart_t *)ctx;
+    return 0;
+}
+
+const etx_serial_driver_t rmtuartSerialDriver = {
+    .init = rmtuartSerialStart,
+    .deinit = rmtuartSerialStop,
+    .sendByte = rmtuartSendByte,
+    .sendBuffer = rmtuartSendBuffer,
+    .waitForTxCompleted = rmtuartWaitForTxCompleted,
+    .getByte = rmtuartGetByte,
+    .getBufferedBytes = rmtuartGetBufferedBytes,
+    .copyRxBuffer = rmtuartCopyRxBuffer,
+    .clearRxBuffer = rmtuartClearRxBuffer,
+    .getBaudrate = nullptr,
+    .setReceiveCb = nullptr,
+    .setIdleCb = rmtuart_setIdleCb,
+    .setBaudrateCb = nullptr,
+};

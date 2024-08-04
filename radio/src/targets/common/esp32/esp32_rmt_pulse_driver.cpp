@@ -36,10 +36,10 @@ static void esp32_rmt_tx_task(void * pdata) {
     vTaskDelete(NULL);
 }
 #endif
-
+rmt_symbol_word_t raw_symbols[512];
 static void esp32_rmt_rx_task(void * pdata) {
     rmt_ctx_t *ctx = (rmt_ctx_t *)pdata;
-    rmt_symbol_word_t raw_symbols[512];
+    
     rmt_rx_done_event_data_t rx_data;
 
     rmt_enable(ctx->rmt);
@@ -48,7 +48,7 @@ static void esp32_rmt_rx_task(void * pdata) {
         ESP_ERROR_CHECK(rmt_receive(ctx->rmt, raw_symbols, sizeof(raw_symbols), &ctx->rx_cfg));
         xQueueReceive(ctx->rxQueue, &rx_data, portMAX_DELAY);
         if (!ctx->exit) {
-            ctx->decoder(ctx, &rx_data);
+            ctx->decoder(ctx->decoder_ctx, &rx_data);
         }
      }
     esp32_rmt_ctx_free(ctx); // done with the ctx
@@ -85,36 +85,41 @@ IRAM_ATTR static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const r
     return high_task_wakeup == pdTRUE;
 }
 
-rmt_ctx_t *esp32_rmt_rx_init(rmt_ctx_t *ctxmem, int pin, rmt_reserve_memsize_t memsize, float tick_in_ns, rmt_rx_decode_cb_t dec_fn, size_t pulse_in_frame, size_t idle_threshold_in_ns, size_t min_pulse_in_ns) {
-    rmt_ctx_t *rvalue = ctxmem;
-
-    if (NULL != rvalue) {
-        rmt_rx_channel_config_t rx_channel_cfg = {
-            .gpio_num = (gpio_num_t)pin,
-            .clk_src = RMT_CLK_SRC_DEFAULT,
-            .resolution_hz = (uint32_t)(1000000000 / tick_in_ns),
-            .mem_block_symbols = memsize, // amount of RMT symbols that the channel can store at a time
-        };
-        ESP_ERROR_CHECK(rmt_new_rx_channel(&rx_channel_cfg, &rvalue->rmt));
-
-        rvalue->decoder = dec_fn;
-        rvalue->rxQueue = xQueueCreate(1, sizeof(rmt_rx_done_event_data_t));
-        rvalue->exit = false;
-        if ((NULL != rvalue->rmt) && (NULL != rvalue->rxQueue)) {
-            rvalue->rx_cfg.signal_range_min_ns = min_pulse_in_ns;
-            rvalue->rx_cfg.signal_range_max_ns = idle_threshold_in_ns;
-            xTaskCreateStaticPinnedToCore(esp32_rmt_rx_task, "esp32_rmt_rx_task", sizeof(rvalue->rmt_task_stack)/sizeof(rvalue->rmt_task_stack[0]),
-                    rvalue, 5, rvalue->rmt_task_stack, rvalue->task_struct, TRAINER_PPM_OUT_TASK_CORE); // TODO-ESP32 priority
-            rmt_rx_event_callbacks_t cbs = {
-                .on_recv_done = rmt_rx_done_callback,
-            };
-            ESP_ERROR_CHECK(rmt_rx_register_event_callbacks(rvalue->rmt, &cbs, rvalue->rxQueue));
-        } else {
-            free(rvalue);
-            rvalue = NULL;
+void esp32_rmt_rx_init(rmt_ctx_t *ctxmem, int pin, rmt_reserve_memsize_t memsize, size_t resolution_hz, rmt_rx_decode_cb_t dec_fn) {
+    assert (NULL != ctxmem);
+    rmt_rx_channel_config_t rx_channel_cfg = {
+        .gpio_num = (gpio_num_t)pin,
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = resolution_hz,
+        .mem_block_symbols = memsize,
+        .flags = {
+            .with_dma = true,
         }
-    }
-    return rvalue;
+    };
+    ESP_ERROR_CHECK(rmt_new_rx_channel(&rx_channel_cfg, &ctxmem->rmt));
+
+    ctxmem->decoder = dec_fn;
+}
+
+StaticTask_t rx_task_buf;
+void esp32_rmt_rx_start(rmt_ctx_t *ctx, void *decoder_ctx, size_t rx_task_stack_size, size_t idle_threshold_in_ns, size_t min_pulse_in_ns) {
+    assert(NULL != ctx);
+    ctx->stack_size = rx_task_stack_size;
+    ctx->rmt_task_stack = (StackType_t *)malloc(ctx->stack_size);
+    assert(NULL != ctx->rmt_task_stack);
+
+    ctx->rxQueue = xQueueCreate(1, sizeof(rmt_rx_done_event_data_t));
+    assert(NULL != ctx->rxQueue);
+    ctx->exit = false;
+    ctx->rx_cfg.signal_range_min_ns = min_pulse_in_ns;
+    ctx->rx_cfg.signal_range_max_ns = idle_threshold_in_ns;
+    ctx->decoder_ctx = decoder_ctx;
+    ctx->task_id = xTaskCreateStaticPinnedToCore(esp32_rmt_rx_task, "esp32_rmt_rx_task", ctx->stack_size,
+            ctx, 5, ctx->rmt_task_stack, &rx_task_buf, TRAINER_PPM_OUT_TASK_CORE); // TODO-MUFFIN priority
+    rmt_rx_event_callbacks_t cbs = {
+        .on_recv_done = rmt_rx_done_callback,
+    };
+    ESP_ERROR_CHECK(rmt_rx_register_event_callbacks(ctx->rmt, &cbs, ctx->rxQueue));
 }
 
 void esp32_rmt_stop(rmt_ctx_t *ctx) {

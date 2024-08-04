@@ -21,8 +21,6 @@
 #include "opentx.h"
 #include <driver/i2s_std.h>
 
-#define ENABLE_SOUND
-
 static uint32_t _sampleRate = AUDIO_SAMPLE_RATE;
 
 static i2s_chan_handle_t                tx_chan;        // I2S tx channel handler
@@ -77,8 +75,6 @@ void audioSetCurrentBuffer(const AudioBuffer * buffer)
   }
 }
 
-
-EXT_RAM_BSS_ATTR static uint8_t zero[2048] = {0};
 static bool channel_enabled = true;
 
 void audioConsumeCurrentBuffer() {
@@ -98,14 +94,13 @@ void audioConsumeCurrentBuffer() {
       channel_enabled = true;
       i2s_channel_enable(tx_chan);
     }
+
     size_t written = 0U;
-#ifdef ENABLE_SOUND
     i2s_channel_write(tx_chan, currentBuffer, currentSize, &written, 1000);
     last = written;
-#else
-    written = currentSize;
-#endif
+
     if (written > currentSize) written = currentSize;
+
     currentBuffer += written;
     currentSize -= written;
     if (currentSize == 0) {

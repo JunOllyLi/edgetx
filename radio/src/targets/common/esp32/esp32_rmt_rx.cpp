@@ -19,24 +19,11 @@
  */
 
 #include "opentx.h"
-#include "esp32_rmt_pulse.h"
+#include "esp32_rmt_rx.h"
 
 static void esp32_rmt_ctx_free(rmt_ctx_t *ctx);
 
-#if 0
-static void esp32_rmt_tx_task(void * pdata) {
-    rmt_ctx_t *ctx = (rmt_ctx_t *)pdata;
-    rmt_transmit_config_t txcfg = {0};
-    rmt_enable(ctx->rmt);
-    while(!ctx->exit) {
-        rmt_transmit(ctx->rmt, ctx->encoder, ctx->data, count, &txcfg);
-        rmt_tx_wait_all_done(ctx->rmt, -1);
-    }
-    esp32_rmt_ctx_free(ctx); // done with the ctx
-    vTaskDelete(NULL);
-}
-#endif
-rmt_symbol_word_t raw_symbols[512];
+rmt_symbol_word_t raw_symbols[512];  // TODO-MUFFIN
 static void esp32_rmt_rx_task(void * pdata) {
     rmt_ctx_t *ctx = (rmt_ctx_t *)pdata;
     
@@ -53,27 +40,6 @@ static void esp32_rmt_rx_task(void * pdata) {
      }
     esp32_rmt_ctx_free(ctx); // done with the ctx
     vTaskDelete(NULL);
-}
-
-rmt_ctx_t *esp32_rmt_tx_init(rmt_ctx_t *ctxmem, int pin, rmt_reserve_memsize_t memsize, float tick_in_ns, rmt_tx_encode_cb_t enc_fn, size_t pulse_in_frame) {
-    rmt_ctx_t *rvalue = ctxmem;
-#if 0
-    if (NULL != rvalue) {
-        rvalue->encoder = enc_fn;
-        rvalue->exit = false;
-        rvalue->rmt = rmtInit(pin, RMT_TX_MODE, memsize);
-        rvalue->data = (rmt_data_t *)malloc(sizeof(rmt_data_t) * pulse_in_frame);
-        if ((NULL != rvalue->rmt) && (NULL != rvalue->data)) {
-            rvalue->tick_in_ns = rmtSetTick(rvalue->rmt, tick_in_ns);
-            xTaskCreateStaticPinnedToCore(esp32_rmt_tx_task, "esp32_rmt_tx_task", sizeof(rvalue->rmt_task_stack)/sizeof(rvalue->rmt_task_stack[0]),
-                    rvalue, 5, rvalue->rmt_task_stack, rvalue->task_struct, TRAINER_PPM_OUT_TASK_CORE); // TODO-feather priority
-        } else {
-            free(rvalue);
-            rvalue = NULL;
-        }
-    }
-#endif
-    return rvalue;
 }
 
 IRAM_ATTR static bool rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data)
@@ -121,6 +87,7 @@ void esp32_rmt_rx_start(rmt_ctx_t *ctx, void *decoder_ctx, size_t rx_task_stack_
     };
     ESP_ERROR_CHECK(rmt_rx_register_event_callbacks(ctx->rmt, &cbs, ctx->rxQueue));
 }
+
 
 void esp32_rmt_stop(rmt_ctx_t *ctx) {
     ctx->exit = true;

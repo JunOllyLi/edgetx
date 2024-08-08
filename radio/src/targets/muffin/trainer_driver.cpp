@@ -19,7 +19,7 @@
  */
 
 #include "opentx.h"
-#include "esp32_rmt_pulse.h"
+#include "esp32_rmt_rx.h"
 
 static rmt_ctx_t* rmt_send = NULL;
 static rmt_ctx_t* rmt_recv = NULL;
@@ -59,7 +59,7 @@ static size_t esp32_rmt_ppm_encode_cb(rmt_ctx_t *ctx) {
     while (0 != trainerPulsesData.ppm.pulses[count]) {
         count++;
     }
-    rmt_ppm_encode_cb(ctx, (uint16_t *)trainerPulsesData.ppm.pulses, count);
+    //rmt_ppm_encode_cb(ctx, (uint16_t *)trainerPulsesData.ppm.pulses, count);
     return count;
 }
 
@@ -67,11 +67,13 @@ static StaticTask_t tx_task_buf;
 EXT_RAM_BSS_ATTR static rmt_ctx_t txctxbuf;
 void init_trainer_ppm()
 {
+#if 0
     txctxbuf.task_struct = &tx_task_buf;
     rmt_send = esp32_rmt_tx_init(&txctxbuf, RMT_TX_PIN, 64,
             RMT_PPM_OUT_TICK_NS,
             esp32_rmt_ppm_encode_cb,
             MAX_TRAINER_CHANNELS + 2); // extra two for idle pulse and termination
+#endif
 }
 
 void stop_trainer_ppm()

@@ -21,7 +21,7 @@
 
 #include "opentx.h"
 #include "flyskyHallStick_driver.h"
-#include "esp32_rmt_pulse.h"
+#include "esp32_rmt_rx.h"
 #include "hal/adc_driver.h"
 #include "esp32_uart_driver.h"
 #include "crc.h"
@@ -40,7 +40,7 @@ static const etx_serial_driver_t *pUart = &rmtuartSerialDriver;
 static etx_serial_init param = {
   .baudrate = FLYSKY_HALL_BAUDRATE,
   .encoding = ETX_Encoding_8N1,
-  .direction = ETX_Dir_TX_RX,
+  .direction = ETX_Dir_RX,
   .polarity = ETX_Pol_Normal
 };
 

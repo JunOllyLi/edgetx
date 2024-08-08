@@ -117,16 +117,16 @@ void keysInit()
 }
 
 void INTERNAL_MODULE_ON(void) {
-    mcp_set_gpio(MCP_ELRS_BOOT, 1);
-    mcp_set_gpio(MCP_ELRS_5V_EN, 1);
+    mcp_set_gpio(MCP_INTMOD_BOOT, 1);
+    mcp_set_gpio(MCP_INTMOD_5V_EN, 1);
 }
 void INTERNAL_MODULE_OFF(void) {
-    mcp_set_gpio(MCP_ELRS_5V_EN, 0);
-    mcp_set_gpio(MCP_ELRS_BOOT, 0);
+    mcp_set_gpio(MCP_INTMOD_5V_EN, 0);
+    mcp_set_gpio(MCP_INTMOD_BOOT, 0);
 }
 
 bool IS_INTERNAL_MODULE_ON(void) {
-    return (0 != (ShadowOutput & (1 << MCP_ELRS_5V_EN)));
+    return (0 != (ShadowOutput & (1 << MCP_INTMOD_5V_EN)));
 }
 
 void pwrOff()

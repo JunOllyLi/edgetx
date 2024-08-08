@@ -275,8 +275,9 @@ set(TARGET_SRC
 
 set(TARGET_SRC
   ${TARGET_SRC}
-  ../common/esp32/esp32_rmt_pulse_driver.cpp
+  ../common/esp32/esp32_rmt_rx.cpp
   ../common/esp32/esp32_rmt_uart.cpp
+  ../common/esp32/rmt_uart_tx_encoder.cpp
 )
 
 set(FIRMWARE_TARGET_SRC

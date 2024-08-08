@@ -19,37 +19,45 @@
  */
 
 #include "opentx.h"
-#include "esp32_rmt_pulse.h"
+#include "esp32_rmt_rx.h"
 #include "opentx.h"
 #include "esp32_uart_driver.h"
+#include "freertos/ringbuf.h"
 
 #include "esp_log.h"
 #define TAG "UART"
 
 #define SAMPLES_PER_BIT 20
 typedef struct {
-    rmt_ctx_t rx;
-    rmt_ctx_t tx;
     etx_rmt_uart_hw_def_t hw_def;
     etx_serial_init params;
     uint8_t bits_in_frame;
     uint8_t data_bits;
-    StaticTask_t rx_task_buf;
-
-    RingbufHandle_t rxRing;
 
     int data_width;
     int info_width; // number of bits of data + parity
     int total_width; // number of bits of data + parity + stop
     int parity;  // -1 means no parity, 0 means even, 1 means odd
+    uint16_t stop_bits;
+
+    // RX
+    rmt_ctx_t rx;
+    StaticTask_t rx_task_buf;
+    RingbufHandle_t rxRing;
+    void (*on_idle_cb)(void *);
+    void *on_idle_cb_param;
 
     int bit_num;
     uint32_t currentByte;
     int count_ones;
+    // --- end RX
 
-    void (*on_idle_cb)(void *);
-    void *on_idle_cb_param;
+    // TX
+    rmt_channel_handle_t tx;
+    rmt_encoder_handle_t encoder;
 } rmt_uart_t;
+
+esp_err_t rmt_new_uart_encoder(etx_rmt_uart_hw_def_t *hw, const etx_serial_init* params, rmt_encoder_handle_t *ret_encoder);
 
 static void rmt_uart_rx_reset_byte(rmt_uart_t *ctx) {
     ctx->bit_num = -1;
@@ -72,12 +80,12 @@ static void rmt_uart_decode_next_symbel(rmt_uart_t *ctx, uint16_t duration, uint
         }
     } else {
         if (1 == level) {
-            if ((ctx->bit_num < ctx->info_width) && (bit_count_in_sym == 0)) {
+            if ((ctx->bit_num <= ctx->info_width) && (bit_count_in_sym == 0)) {
                 // recv done, means idle condition detected while the bits still pending
                 // Indicates that the rest of this byte are all 1s
                 bit_count_in_sym = ctx->total_width - ctx->bit_num;
             }
-            if (ctx->parity != -1) {
+            if ((ctx->parity != -1) && (ctx->bit_num < ctx->info_width)) {
                 size_t oc = bit_count_in_sym;
                 if (oc > ctx->info_width - ctx->bit_num) {
                     oc = ctx->info_width - ctx->bit_num;
@@ -88,10 +96,12 @@ static void rmt_uart_decode_next_symbel(rmt_uart_t *ctx, uint16_t duration, uint
         }
         ctx->bit_num += bit_count_in_sym;
     }
-    //TRACE("===== %d %02X %d %d %d", ctx->bit_num, (uint8_t)(ctx->currentByte&0xFF), duration, bit_count_in_sym, level);
-    if (ctx->bit_num >= ctx->info_width) {
+    //TRACE("RMT SYM %d %04X %d %d %d", ctx->bit_num, (uint16_t)(ctx->currentByte&0xFFFF), duration, bit_count_in_sym, level);
+    if (ctx->bit_num >= ctx->total_width) {
         if ((ctx->parity != -1) && (((ctx->parity + ctx->count_ones) & 0x01) != 0)) {
-            TRACE_ERROR("RMT_UART parity check failed");
+            TRACE_ERROR("RMT_UART parity check failed %04X\n", (uint16_t)(ctx->currentByte&0xFFFF));
+        } else if ((ctx->stop_bits & ctx->currentByte) != ctx->stop_bits) {
+            TRACE_ERROR("RMT_UART invalid STOP %04X\n", (uint16_t)(ctx->currentByte&0xFFFF));
         } else {
             //TRACE("--- %04X", ctx->currentByte);
             uint8_t d = ctx->currentByte & 0xFF;
@@ -128,16 +138,38 @@ static void parse_params(rmt_uart_t *ctx, const etx_serial_init* params) {
         ctx->data_width = 8;
         ctx->info_width = 8;
         ctx->total_width = 9;
+        ctx->stop_bits = 0x100;
         break;
     case ETX_Encoding_8E2:
         ctx->parity = 0;
         ctx->data_width = 8;
         ctx->info_width = 9;
         ctx->total_width = 11;
+        ctx->stop_bits = 0x600;
         break;
     default:
         break;
     }
+}
+
+static void esp32_rmt_tx_init(rmt_uart_t *port, etx_rmt_uart_hw_def_t *hw) {
+    assert (NULL != port);
+    assert (NULL != hw);
+    rmt_tx_channel_config_t tx_channel_cfg = {
+        .gpio_num = (gpio_num_t)hw->tx_pin,
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = hw->resolution_hz,
+        .mem_block_symbols = hw->memsize,
+        .trans_queue_depth = hw->memsize,
+        .flags = {
+            .with_dma = true,
+        }
+    };
+    ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_channel_cfg, &port->tx));
+
+    ESP_ERROR_CHECK(rmt_new_uart_encoder(hw, &port->params, &port->encoder));
+
+    ESP_ERROR_CHECK(rmt_enable(port->tx));
 }
 
 static void* rmtuartSerialStart(void *hw_def, const etx_serial_init* params)
@@ -151,12 +183,20 @@ static void* rmtuartSerialStart(void *hw_def, const etx_serial_init* params)
 
         parse_params(rvalue, params);
 
-        rvalue->rxRing = xRingbufferCreate(hw->memsize, RINGBUF_TYPE_BYTEBUF);
-	    esp32_rmt_rx_init(&rvalue->rx, hw->rx_pin, hw->memsize, hw->resolution_hz, rmt_uart_decode_cb);
+        if ((params->direction == ETX_Dir_RX) || (params->direction == ETX_Dir_TX_RX)) {
+            // RX
+            rvalue->rxRing = xRingbufferCreate(hw->memsize, RINGBUF_TYPE_BYTEBUF);
+	        esp32_rmt_rx_init(&rvalue->rx, hw->rx_pin, hw->memsize, hw->resolution_hz, rmt_uart_decode_cb);
 
-        rmt_uart_rx_reset_byte(rvalue);
-        esp32_rmt_rx_start(&rvalue->rx, (void *)rvalue, hw->rx_task_stack_size,
-                hw->idle_threshold_in_ns, hw->min_pulse_in_ns);
+            rmt_uart_rx_reset_byte(rvalue);
+            esp32_rmt_rx_start(&rvalue->rx, (void *)rvalue, hw->rx_task_stack_size,
+                    hw->idle_threshold_in_ns, hw->min_pulse_in_ns);
+        }
+
+        if ((params->direction == ETX_Dir_TX) || (params->direction == ETX_Dir_TX_RX)) {
+            // TX
+            esp32_rmt_tx_init(rvalue, hw);
+        }
     }
 
     return (void *)rvalue;
@@ -165,16 +205,36 @@ static void* rmtuartSerialStart(void *hw_def, const etx_serial_init* params)
 void rmtuartSendByte(void* ctx, uint8_t byte)
 {
     rmt_uart_t *port = (rmt_uart_t *)ctx;
+    rmt_transmit_config_t trans_cfg = {
+        .loop_count = 0,
+        .flags = {
+            .eot_level = 1,
+            .queue_nonblocking = 0,
+        }
+    };
+    ESP_ERROR_CHECK(rmt_transmit(port->tx, port->encoder, &byte, 1, &trans_cfg));
 }
 
 void rmtuartSendBuffer(void* ctx, const uint8_t * data, uint32_t size)
 {
     rmt_uart_t *port = (rmt_uart_t *)ctx;
+    rmt_transmit_config_t trans_cfg = {
+        .loop_count = 0,
+        .flags = {
+            .eot_level = 1,
+            .queue_nonblocking = 0,
+        }
+    };
+    for (int i = 0; i < size; i++) {
+        // send data 1 byte at a time so the encoder can encode each byte
+        ESP_ERROR_CHECK(rmt_transmit(port->tx, port->encoder, &data[i], 1, &trans_cfg));
+    }
 }
 
 void rmtuartWaitForTxCompleted(void* ctx)
 {
     rmt_uart_t *port = (rmt_uart_t *)ctx;
+    ESP_ERROR_CHECK(rmt_tx_wait_all_done(port->tx, -1));
 }
 
 static int rmtuartGetByte(void* ctx, uint8_t* data)

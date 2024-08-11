@@ -24,6 +24,7 @@
 #include "driver/gptimer.h"
 
 static gptimer_handle_t mixer_timer = NULL;
+static bool mixer_timer_enabled = false;
 
 static bool IRAM_ATTR alarm_mixer_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
@@ -70,7 +71,7 @@ void mixerSchedulerStart()
         }
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(mixer_timer, &alarm_config));
-    ESP_ERROR_CHECK(gptimer_start(mixer_timer));
+    mixer_timer_enabled = true;
 }
 
 void mixerSchedulerStop()
@@ -81,6 +82,9 @@ void mixerSchedulerStop()
 
 void mixerSchedulerEnableTrigger()
 {
+    while (!mixer_timer_enabled) { // for potential race condition between mixerSchedulerStart and the mixerTask
+        RTOS_WAIT_MS(1);
+    }
     ESP_ERROR_CHECK(gptimer_start(mixer_timer));
 }
 

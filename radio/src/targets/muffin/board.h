@@ -102,6 +102,11 @@ void pwrOn();
 void pwrOff();
 bool pwrPressed();
 
+void INTERNAL_MODULE_ON(void);
+void INTERNAL_MODULE_OFF(void);
+void EXTERNAL_MODULE_ON(void);
+void EXTERNAL_MODULE_OFF(void);
+
 struct TouchState getInternalTouchState();
 struct TouchState touchPanelRead();
 bool touchPanelEventOccured();

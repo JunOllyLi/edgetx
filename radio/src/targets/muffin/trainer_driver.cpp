@@ -103,3 +103,13 @@ int sbusGetByte(uint8_t * byte)
     return 0;
 }
 #endif
+
+
+bool trainer_dsc_available() { return true; }
+void trainer_init_dsc_out() {}
+void trainer_init_dsc_in() {}
+void trainer_stop_dsc() {}
+
+bool is_trainer_dsc_connected() { return false; }
+void trainer_init_module_cppm() {}
+void trainer_stop_module_cppm() {}

@@ -125,8 +125,11 @@ void INTERNAL_MODULE_OFF(void) {
     mcp_set_gpio(MCP_INTMOD_BOOT, 0);
 }
 
-bool IS_INTERNAL_MODULE_ON(void) {
-    return (0 != (ShadowOutput & (1 << MCP_INTMOD_5V_EN)));
+void EXTERNAL_MODULE_ON(void) {
+    mcp_set_gpio(MCP_EXTMOD_5V_EN, 1);
+}
+void EXTERNAL_MODULE_OFF(void) {
+    mcp_set_gpio(MCP_EXTMOD_5V_EN, 0);
 }
 
 void pwrOff()

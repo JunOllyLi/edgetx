@@ -26,6 +26,9 @@
 #include "esp32_uart_driver.h"
 #include "crc.h"
 
+#if CONFIG_ESP_CONSOLE_UART_NUM == 0
+// UART_NUM_0 used for console output. Likely debugging USB stuff.
+// Use RMT UART for gimbal. It works fine but roughly 1 out of 10000 packets gets CRC error.
 static const etx_rmt_uart_hw_def_t gimbal_uart_hw_def = {
     .rx_pin = FLYSKY_UART_RX_PIN,
     .tx_pin = FLYSKY_UART_TX_PIN,
@@ -36,6 +39,16 @@ static const etx_rmt_uart_hw_def_t gimbal_uart_hw_def = {
     .min_pulse_in_ns = 800,
 };
 static const etx_serial_driver_t *pUart = &rmtuartSerialDriver;
+#else
+static const etx_esp32_uart_hw_def_t gimbal_uart_hw_def = {
+    .uart_port = UART_NUM_0,
+    .rx_pin = FLYSKY_UART_RX_PIN,
+    .tx_pin = FLYSKY_UART_TX_PIN,
+    .fifoSize = 4096,
+    .queueSize = 10
+};
+static const etx_serial_driver_t *pUart = &ESPUartSerialDriver;
+#endif
 
 static etx_serial_init param = {
   .baudrate = FLYSKY_HALL_BAUDRATE,

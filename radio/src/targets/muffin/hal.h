@@ -68,18 +68,20 @@
 // For MCP23017 based GPIO extension:
 //    REG for the port, 0 - G0Ax, 1 - G0Bx, 2 - G1Ax, 3 - G1Bx
 //    PIN for the pin num in the port
-#define KEYS_GPIO_REG_TELE           0
-#define KEYS_GPIO_PIN_TELE           0
-#define KEYS_GPIO_REG_SYS            0
-#define KEYS_GPIO_PIN_SYS            1
+#define KEYS_GPIO_REG_DOWN           0
+#define KEYS_GPIO_PIN_DOWN           0
+#define KEYS_GPIO_REG_UP             0
+#define KEYS_GPIO_PIN_UP             1
 #define KEYS_GPIO_REG_EXIT           0
 #define KEYS_GPIO_PIN_EXIT           2
 
-#define KEYS_GPIO_REG_ENTER          1
-#define KEYS_GPIO_PIN_ENTER          1
+//#define KEYS_GPIO_REG_ENTER          1
+//#define KEYS_GPIO_PIN_ENTER          1
 
-#define KEYS_GPIO_REG_MDL            3
-#define KEYS_GPIO_PIN_MDL            0
+//#define KEYS_GPIO_REG_MDL            3
+//#define KEYS_GPIO_PIN_MDL            0
+#define KEYS_GPIO_REG_ENTER            3
+#define KEYS_GPIO_PIN_ENTER            0
 
 #define TRIMS_GPIO_REG_LVU           2
 #define TRIMS_GPIO_PIN_LVU           6

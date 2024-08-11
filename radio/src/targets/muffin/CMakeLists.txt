@@ -8,7 +8,6 @@ option(GHOST "Ghost TX Module" OFF)
 option(INTERNAL_MODULE_PPM "Support for PPM internal module" OFF)
 option(AUTOUPDATE "Auto update internal chips from SD" OFF)
 
-set(EXTERNAL_MODULE NO)
 add_definitions(-DHARDWARE_TRIMS)
 add_definitions(-DFLYSKY_HALL_GIMBAL)
 
@@ -33,6 +32,10 @@ option(INTERNAL_MODULE_CRSF "Support for CRSF internal module" ON)
 option(INTERNAL_MODULE_ELRS "Support for ELRS internal module" ON)
 option(INTERNAL_MODULE_ESPNOW "Support for ESPNOW internal module" ON)
 option(INTERNAL_MODULE_BT_POWERUP "Support for Bluetooth internal module for POWERUP" OFF)
+
+set(EXTERNAL_MODULE YES)
+add_definitions(-DHARDWARE_EXTERNAL_MODULE)
+
 set(FLAVOUR muffin)
 set(NAVIGATION_TYPE 9x)
 set(CPU_TYPE ESP32)
@@ -260,7 +263,7 @@ set(TARGET_SRC
   ads1015_adc.cpp
   switch_driver.cpp
   ../common/esp32/abnormal_reboot.cpp
-  ../common/esp32/module_drivers.cpp
+  module_drivers.cpp
   ../common/esp32/watchdog_driver.cpp
   ../common/esp32/usb_driver.cpp
   ../common/esp32/i2c_driver.cpp

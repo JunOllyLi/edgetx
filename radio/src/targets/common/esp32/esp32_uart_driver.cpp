@@ -84,7 +84,7 @@ static void espuart_uart_event_task(void *pvParameters)
                 break;
             //Event of UART RX break detected
             case UART_BREAK:
-                ESP_LOGI(TAG, "uart rx break");
+                //ESP_LOGI(TAG, "uart rx break");
                 if (NULL != port->on_idle_cb) {
                     port->on_idle_cb(port->on_idle_cb_param);
                 }

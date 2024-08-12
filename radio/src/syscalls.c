@@ -36,7 +36,6 @@ unsigned char * heap = (unsigned char *)&_heap_start;
 
 extern caddr_t _sbrk(int nbytes)
 {
-
   if (heap + nbytes < (unsigned char *)&_heap_end) {
     unsigned char * prev_heap = heap;
     heap += nbytes;

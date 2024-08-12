@@ -97,7 +97,6 @@
   #define DEF_TRAINER_CHANNELS         8
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_TELEMETRY_SENSORS        40
-  #define MAX_CUSTOM_SCREENS           5
 #else
   #warning "Unknown board!"
 #endif

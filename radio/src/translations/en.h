@@ -244,7 +244,7 @@
   #define TR_OK                        TR("\010" "\010" "\010" "[OK]", "\010" "\010" "\010" "\010" "\010" "[OK]")
 #endif
 
-#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#if defined(PCBTARANIS)
   #define TR_POPUPS_ENTER_EXIT         TR(TR_EXIT "\010" TR_ENTER, TR_EXIT "\010" "\010" "\010" "\010" TR_ENTER)
 #else
   #define TR_POPUPS_ENTER_EXIT         TR_ENTER "\010" TR_EXIT
@@ -860,13 +860,13 @@
 #define TR_SPEAKER                     INDENT "Speaker"
 #define TR_BUZZER                      INDENT "Buzzer"
 #define TR_BYTES                       "bytes"
-#define TR_MODULE_BIND                 EDGETX_BUTTON(TR("Bnd", "Bind"))
+#define TR_MODULE_BIND                 BUTTON(TR("Bnd", "Bind"))
 #define TR_POWERMETER_ATTN_NEEDED      "Attenuator needed"
 #define TR_PXX2_SELECT_RX              "Select RX"
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Select device"
 #define TR_DISCOVER                    "Discover"
-#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
+#define TR_BUTTON_INIT                 BUTTON("Init")
 #define TR_WAITING                     "Waiting..."
 #define TR_RECEIVER_DELETE             "Delete receiver?"
 #define TR_RECEIVER_RESET              "Reset receiver?"
@@ -883,7 +883,7 @@
 #define TR_FS_BTN                      BUTTON(TR("Custom sw", TR_FUNCTION_SWITCHES))
 #define TR_TOUCH_NOTFOUND              "Touch hardware not found"
 #define TR_TOUCH_EXIT                  "Touch screen to exit"
-#define TR_SET                         EDGETX_BUTTON("Set")
+#define TR_SET                         BUTTON("Set")
 #define TR_TRAINER                     "Trainer"
 #define TR_CHANS                       "Chans"
 #define TR_ANTENNAPROBLEM              CENTER "TX antenna problem!"

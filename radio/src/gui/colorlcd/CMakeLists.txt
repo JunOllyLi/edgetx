@@ -15,12 +15,10 @@ file(GLOB LAYOUTS_SRC RELATIVE ${RADIO_SRC_DIR}/gui/colorlcd
 file(GLOB WIDGETS_SRC RELATIVE ${RADIO_SRC_DIR}/gui/colorlcd
   ${RADIO_SRC_DIR}/gui/colorlcd/widgets/*.cpp)
 
-set(LCD_SRC_F lcd.cpp)
-
 set(GUI_SRC
   ${GUI_SRC}
   colors.cpp
-  ${LCD_SRC_F}
+  lcd.cpp
   splash.cpp
   fonts.cpp
   curves.cpp

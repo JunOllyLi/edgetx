@@ -36,7 +36,7 @@ TEST_F(SpecialFunctionsTest, SwitchFiledSize)
          "values";
 }
 
-#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
+#if defined(PCBFRSKY)
 TEST_F(SpecialFunctionsTest, FlightReset)
 {
   g_model.customFn[0].swtch = SWSRC_FIRST_SWITCH;

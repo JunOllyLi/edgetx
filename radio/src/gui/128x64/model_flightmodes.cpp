@@ -211,7 +211,7 @@ void menuModelFlightModeOne(event_t event)
   }
 }
 
-#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#if defined(PCBTARANIS)
   #define NAME_POS                     20
   #define SWITCH_POS                   59
   #define TRIMS_POS                    79

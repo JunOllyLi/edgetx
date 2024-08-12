@@ -28,7 +28,7 @@
 #if defined (COLORLCD)
   #define MENUS_STACK_SIZE     20000
 #else
-  #define MENUS_STACK_SIZE     8000
+  #define MENUS_STACK_SIZE     2000
 #endif
 
 #if !defined(ESP_PLATFORM)

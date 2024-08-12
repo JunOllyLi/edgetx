@@ -37,12 +37,6 @@ uint8_t logDelay100ms;
 static tmr10ms_t lastLogTime = 0;
 
 #if !defined(SIMU)
-#if defined(ESP_PLATFORM)
-  #include "FreeRTOS_entry.h"
-#else
-#include <FreeRTOS/include/FreeRTOS.h>
-#include <FreeRTOS/include/timers.h>
-#endif
 
 #include "tasks/mixer_task.h"
 

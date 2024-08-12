@@ -857,7 +857,7 @@
 #define TR_PXX2_DEFAULT                "<default>"
 #define TR_BT_SELECT_DEVICE            "Select device"
 #define TR_DISCOVER             "Discover"
-#define TR_BUTTON_INIT                 EDGETX_BUTTON("Init")
+#define TR_BUTTON_INIT                 BUTTON("Init")
 #define TR_WAITING                     "Waiting..."
 #define TR_RECEIVER_DELETE             "Delete receiver?"
 #define TR_RECEIVER_RESET              "Reset receiver?"

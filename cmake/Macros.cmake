@@ -98,7 +98,6 @@ function(AddHardwareDefTarget output)
 
   AddCompilerFlags(HW_DEF_ARGS)
 
-  message(STATUS ++++++++++++++++++++++++++++++++++++ ${HW_DEF_ARGS})
   set(HW_DEF_SRC ${RADIO_DIRECTORY}/src/targets/${TARGET_DIR}/hal.h)
 
   separate_arguments(flags UNIX_COMMAND ${CMAKE_CXX_FLAGS})

@@ -20,7 +20,6 @@
 
 #include "opentx.h"
 #include "mixer_scheduler.h"
-#include "FreeRTOS_entry.h"
 #include "driver/gptimer.h"
 
 static gptimer_handle_t mixer_timer = NULL;

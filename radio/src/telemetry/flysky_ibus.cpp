@@ -314,6 +314,7 @@ void processFlySkySensor(const uint8_t * packet, uint8_t type)
   //Load most likely value
   if (type == 0xAA) {
     value = (packet[3] << 8) | packet[2];
+    // Not all FlySky RX sends RSSI, so loose the critiria a little bit here to let telemetry going
     if (value > 0) telemetryStreaming = TELEMETRY_TIMEOUT10ms;
   }
   else

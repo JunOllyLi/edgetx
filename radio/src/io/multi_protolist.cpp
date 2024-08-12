@@ -33,12 +33,6 @@
 #include <algorithm>
 
 #if !defined(SIMU)
-#if defined(ESP_PLATFORM)
-  #include "FreeRTOS_entry.h"
-#else
-#include <FreeRTOS/include/FreeRTOS.h>
-#include <FreeRTOS/include/timers.h>
-#endif
 
 struct ProtoScanTimer {
   TimerHandle_t timer = nullptr;

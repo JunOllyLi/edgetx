@@ -130,12 +130,7 @@ static const char * attemptLoad(const char *filename, ChecksumResult* checksum_s
 {
   YamlTreeWalker tree;
   tree.reset(get_radiodata_nodes(), (uint8_t*)&g_eeGeneral);
-  const char *r = readYamlFile(filename, YamlTreeWalker::get_parser_calls(), &tree, checksum_status);
-
-  if (tree.getBitOffset() > sizeof(RadioData)*8) {
-    TRACE_ERROR("Expected %d bits but got %d bits from %s", sizeof(RadioData) * 8, tree.getBitOffset(), filename);
-  }
-  return r;
+  return readYamlFile(filename, YamlTreeWalker::get_parser_calls(), &tree, checksum_status);
 }
 
 const char * loadRadioSettingsYaml(bool checks)

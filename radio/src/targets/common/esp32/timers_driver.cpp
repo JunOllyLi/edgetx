@@ -19,7 +19,6 @@
  */
 
 #include "opentx.h"
-#include "FreeRTOS_entry.h"
 #include "driver/gptimer.h"
 
 static gptimer_handle_t MyTim2Mhz = NULL;

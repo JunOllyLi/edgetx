@@ -121,7 +121,7 @@ inline bool isRasValueValid()
 {
   return true;
 }
-#elif defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#elif defined(PCBTARANIS)
 inline bool isRasValueValid()
 {
   return telemetryData.xjtVersion != 0x00FF;

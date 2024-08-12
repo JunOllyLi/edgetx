@@ -2,12 +2,7 @@
 #ifndef ESP32_COMMON_H_
 #define ESP32_COMMON_H_
 
-#if defined(ESP_PLATFORM)
-#include "FreeRTOS_entry.h"
-#else
-// For yaml_data
-#endif
-
+#include <rtos.h>
 #include <inttypes.h>
 #include "definitions.h"
 #include "opentx_constants.h"

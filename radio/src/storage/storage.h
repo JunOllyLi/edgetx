@@ -26,7 +26,7 @@
   #define WRITE_DELAY_10MS 100
 #elif defined(RTC_BACKUP_RAM)
   #define WRITE_DELAY_10MS 1500 /* 15s */
-#elif defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#elif defined(PCBTARANIS)
   #define WRITE_DELAY_10MS 500
 #else
   #define WRITE_DELAY_10MS 200

@@ -129,12 +129,6 @@ void pulsesRestartModuleUnsafe(uint8_t module)
 }
 
 #if !defined(SIMU)
-#if !defined(PCB_MUFFIN)
-#include <FreeRTOS/include/FreeRTOS.h>
-#include <FreeRTOS/include/timers.h>
-#else
-#include <FreeRTOS_entry.h>
-#endif
 static void _setup_async_module_restart(void* p1, uint32_t p2)
 {
   if (!mixerTaskTryLock()) {

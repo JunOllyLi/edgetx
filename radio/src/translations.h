@@ -114,16 +114,14 @@
 #endif
 
 #if defined(COLORLCD)
-  #define EDGETX_BUTTON(x) x
+  #define BUTTON(x) x
   #define INDENT
 #else
-  #define EDGETX_BUTTON(x)    "[" x "]"
+  #define BUTTON(x)    "[" x "]"
   #define INDENT       "\001"
   #define LEN_INDENT   1
   #define INDENT_WIDTH (FW/2)
 #endif
-
-#define BUTTON(x) EDGETX_BUTTON(x)
 
 #if (LCD_W == 212)
  #define LCDW_128_480_LINEBREAK        ""

@@ -80,7 +80,7 @@ void debugPrintf(const char * format, ...)
     " notd",  // INT_OTG_FS_RX_NOT_DEVICE,
 #endif // #if defined(DEBUG_USB_INTERRUPTS)
   };
-#elif defined(PCB_MUFFIN) || defined(PCBTARANIS) 
+#elif defined(PCBTARANIS)
   const char * const interruptNames[INT_LAST] = {
     "Tick ",   // INT_TICK,
     "5ms  ",   // INT_5MS,

@@ -143,16 +143,21 @@ extern "C++" {
   {
     return (uint32_t)(simuTimerMicros() / 1000);
   }
+
 #elif defined(FREE_RTOS)
 #ifdef __cplusplus
   extern "C" {
 #endif
 #if defined(ESP_PLATFORM)
-    #include "FreeRTOS_entry.h"
+    #include "freertos/FreeRTOS.h"
+    #include "freertos/task.h"
+    #include "freertos/semphr.h"
+    #include "freertos/event_groups.h"
 #else
     #include <FreeRTOS/include/FreeRTOS.h>
     #include <FreeRTOS/include/task.h>
     #include <FreeRTOS/include/semphr.h>
+    #include <FreeRTOS/include/timers.h>
 #endif
 #ifdef __cplusplus
   }

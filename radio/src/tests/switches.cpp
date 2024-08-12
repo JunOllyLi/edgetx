@@ -40,10 +40,7 @@ void setLogicalSwitch(int index, uint16_t _func, int16_t _v1, int16_t _v2, int16
 #define SWSRC_SW1 (SWSRC_FIRST_LOGICAL_SWITCH)
 #define SWSRC_SW2 (SWSRC_FIRST_LOGICAL_SWITCH + 1)
 
-#define SWSRC_SW1 (SWSRC_FIRST_LOGICAL_SWITCH)
-#define SWSRC_SW2 (SWSRC_FIRST_LOGICAL_SWITCH + 1)
-
-#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#if defined(PCBTARANIS)
 TEST(getSwitch, OldTypeStickyCSW)
 {
   RADIO_RESET();
@@ -85,7 +82,7 @@ TEST(getSwitch, nullSW)
 }
 
 
-#if defined(PCB_MUFFIN) || defined(PCBTARANIS)
+#if defined(PCBTARANIS)
 TEST(getSwitch, inputWithTrim)
 {
   MODEL_RESET();
@@ -106,7 +103,7 @@ TEST(getSwitch, inputWithTrim)
 }
 #endif
 
-#if defined(PCB_MUFFIN) || defined(PCBFRSKY)
+#if defined(PCBFRSKY)
 TEST(evalLogicalSwitches, playFile)
 {
   SYSTEM_RESET();

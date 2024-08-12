@@ -31,15 +31,6 @@
   #include "libopenui.h"
 #endif
 
-#if !defined(SIMU)
-#if defined(ESP_PLATFORM)
-  #include "FreeRTOS_entry.h"
-#else
-  #include <FreeRTOS/include/FreeRTOS.h>
-  #include <FreeRTOS/include/timers.h>
-#endif
-#endif
-
 #include "spektrum.h"
 
 #if defined(CROSSFIRE)

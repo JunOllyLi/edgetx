@@ -20,7 +20,6 @@
 
 #include "opentx.h"
 #include "i2c_driver.h"
-#include "FreeRTOS_entry.h"
 #include "mcp23xxx.h"
 
 #include "mcp_pins.h"

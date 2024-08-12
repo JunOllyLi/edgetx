@@ -37,6 +37,10 @@
 #include "special_functions.h"
 #include "view_channels.h"
 
+#if defined(PCB_MUFFIN)
+#include "radio_wifi.h"
+#endif
+
 RadioMenu::RadioMenu() : TabsGroup(ICON_RADIO) { build(); }
 
 RadioMenu::~RadioMenu() { storageCheck(true); }
@@ -54,6 +58,9 @@ void RadioMenu::build()
   if (_radioGFEnabled) addTab(new SpecialFunctionsPage(g_eeGeneral.customFn));
   if (_radioTrainerEnabled) addTab(new RadioTrainerPage());
   addTab(new RadioHardwarePage());
+#if defined(PCB_MUFFIN)
+  addTab(new RadioWiFiPage());
+#endif
   addTab(new RadioVersionPage());
 }
 

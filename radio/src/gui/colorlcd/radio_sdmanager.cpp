@@ -390,10 +390,12 @@ void RadioSdManagerPage::fileAction(const char* path, const char* name,
       });
     }
     if (!READ_ONLY() && !strcasecmp(ext, FIRMWARE_EXT)) {
+#if defined(BOOTLOADER)
       if (isBootloader(fullpath)) {
         menu->addLine(STR_FLASH_BOOTLOADER,
                       [=]() { BootloaderUpdate(fullpath); });
       }
+#endif
     } else if (!READ_ONLY() && !strcasecmp(ext, SPORT_FIRMWARE_EXT)) {
 
       auto mod_desc = modulePortGetModuleDescription(SPORT_MODULE);
@@ -533,10 +535,12 @@ void RadioSdManagerPage::fileAction(const char* path, const char* name,
 
 void RadioSdManagerPage::BootloaderUpdate(const char* fn)
 {
+#if defined(BOOTLOADER)
   BootloaderFirmwareUpdate bootloaderFirmwareUpdate;
   auto dialog =
       new FlashDialog<BootloaderFirmwareUpdate>(bootloaderFirmwareUpdate);
   dialog->flash(fn);
+#endif
 }
 
 #if defined(BLUETOOTH)

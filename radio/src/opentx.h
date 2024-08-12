@@ -33,7 +33,7 @@
 
 #include "board.h"
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(ESP_PLATFORM)
 #include "usbd_msc_conf.h"
 #endif
 
@@ -176,7 +176,7 @@ struct CustomFunctionsContext {
 #include "strhelpers.h"
 #include "gui.h"
 
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(assert)
   #define assert(x)
   #if !defined(DEBUG)
     #define printf printf_not_allowed
@@ -766,8 +766,7 @@ union ReusableBuffer
     ModuleInformation internalModule;
 #endif
   } viewMain;
-
-#if !defined(SIMU)
+#if !defined(ESP_PLATFORM) && !defined(SIMU)
   // Data for the USB mass storage driver. If USB mass storage
   // runs no menu is not allowed to be displayed
   uint8_t MSC_BOT_Data[MASS_STORAGE_BUFFER_SIZE];

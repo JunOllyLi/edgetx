@@ -84,6 +84,7 @@ set(GUI_SRC
   radio_diagkeys.cpp
   radio_diaganas.cpp
   radio_diagcustswitches.cpp
+  radio_wifi.cpp
   radio_theme.cpp
   radio_calibration.cpp
   view_about.cpp
@@ -189,7 +190,10 @@ set(LIBOPENUI_SRC_DIR thirdparty/libopenui)
 set(LVGL_SRC_DIR ${LIBOPENUI_SRC_DIR}/thirdparty/lvgl/src)
 
 include(${LIBOPENUI_SRC_DIR}/src/CMakeLists.txt)
+if(ESP_PLATFORM)
+else()
 include(${LIBOPENUI_SRC_DIR}/thirdparty/CMakeLists.txt)
+endif()
 
 set(SRC ${SRC} ${LVGL_FONT_SOURCES})
 

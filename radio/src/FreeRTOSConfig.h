@@ -19,6 +19,7 @@
  * GNU General Public License for more details.
  */
 
+#if !defined(ESP_PLATFORM)
 #pragma once
 
 // Avoid using any other header file
@@ -125,3 +126,7 @@ standard names. */
 #define vPortSVCHandler SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
 #define xPortSysTickHandler SysTick_Handler
+
+#else  // defined(ESP_PLATFORM)
+#include <freertos/FreeRTOSConfig.h>
+#endif // defined(ESP_PLATFORM)

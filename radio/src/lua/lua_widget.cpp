@@ -82,10 +82,10 @@ void LuaEventHandler::event_cb(lv_event_t* e)
     if (code == LV_EVENT_PRESSING) {
       lv_point_t vect_act;
       lv_indev_get_vect(click_source, &vect_act);
-
+#if defined(SLIDE_RANGE)
       if ((abs(vect_act.x) >= SLIDE_RANGE) || (abs(vect_act.y) >= SLIDE_RANGE))
         _sliding = true;
-
+#endif
       if (!_sliding) return;
       TRACE_WINDOWS("LuaWidget touch slide");
 

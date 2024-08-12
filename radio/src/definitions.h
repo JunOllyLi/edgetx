@@ -68,6 +68,12 @@
   #define __CCMRAM
 #endif
 
+#if defined(ESP_PLATFORM)
+  #define __SDRAM   EXT_RAM_BSS_ATTR
+#if defined(COLORLCD)
+  #define __SDRAMFONTS __attribute__((section(".sdram_fonts"), aligned(4)))
+#endif
+#else
 #if defined(SDRAM) && !defined(SIMU)
   #define __SDRAM   __attribute__((section(".sdram"), aligned(4)))
 #if defined(COLORLCD)
@@ -77,6 +83,7 @@
   #define __SDRAM   __DMA
 #if defined(COLORLCD)
   #define __SDRAMFONTS __DMA
+#endif
 #endif
 #endif
 

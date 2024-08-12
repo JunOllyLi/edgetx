@@ -200,6 +200,10 @@ POT_CONFIG = {
     "pocket": {
         "P1": {"default": "POT"}
     },
+    "muffin": {
+        "P1": {"default": "POT"},
+        "P2": {"default": "POT"}
+    },
 }
 
 

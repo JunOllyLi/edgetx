@@ -13,3 +13,5 @@ radio/src/tests/gtest*.tar.gz
 .editorconfig
 .cache
 compile_commands.json
+
+sdkconfig.old

@@ -164,7 +164,7 @@
  *-----------*/
 
 /*Use STM32's DMA2D (aka Chrom Art) GPU*/
-#if defined(SIMU)
+#if defined(SIMU) || defined(ESP_PLATFORM)
   #define LV_USE_GPU_STM32_DMA2D 0
 #else //SIMU
   #define LV_USE_GPU_STM32_DMA2D 1

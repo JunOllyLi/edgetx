@@ -164,6 +164,13 @@ extern uint32_t NV14internalModuleFwVersion;
   }
 #endif
 
+#if defined(ESPNOW)
+inline bool isModuleESPNOW(uint8_t idx)
+{
+  return g_model.moduleData[idx].type == MODULE_TYPE_ESPNOW;
+}
+#endif
+
 inline bool isModuleTypeXJT(uint8_t type)
 {
   return type == MODULE_TYPE_XJT_PXX1 || type == MODULE_TYPE_XJT_LITE_PXX2;
@@ -439,6 +446,12 @@ static const int8_t maxChannelsModules_M8[] = {
   6, // MODULE_TYPE_FLYSKY_AFHDS2A: 14 channels
   10,// MODULE_TYPE_FLYSKY_AFHDS3: 18 channels
   4, // MODULE_TYPE_LEMON_DSMP: 12 channels for DSMX
+#if defined(ESPNOW)
+  24, // MODULE_TYPE_ESPNOW
+#endif
+#if defined(BT_POWERUP)
+  0, // MODULE_TYPE_BT_POWERUP
+#endif
 };
 
 static_assert(MODULE_TYPE_COUNT == sizeof(maxChannelsModules_M8),
@@ -605,6 +618,9 @@ inline bool isMultiProtocolDSMCloneAvailable(uint8_t moduleIdx)
 
 inline bool isModuleBindRangeAvailable(uint8_t moduleIdx)
 {
+#if defined(ESPNOW)
+  if (isModuleESPNOW(moduleIdx)) return true;
+#endif
   return isModulePXX2(moduleIdx) || isModulePXX1(moduleIdx) ||
          isModuleDSM2(moduleIdx) || isModuleMultimodule(moduleIdx) ||
          isModuleFlySky(moduleIdx) || isModuleDSMP(moduleIdx);

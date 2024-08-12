@@ -72,6 +72,7 @@ def findLibClang():
             "/usr/lib/llvm-7/lib",
             "/usr/lib/llvm-6.0/lib",
             "/usr/lib/llvm-3.8/lib",
+            "/usr/lib/llvm-17/lib",
             "/usr/local/lib",
             "/usr/lib",
             "/usr/lib64"
@@ -117,6 +118,7 @@ def initLibClang():
     try:
         index = Index.create()
     except Exception as e:
+        print(e, file=sys.stderr)
         print("ERROR (find_clang): could not load libclang from '%s'." % library_path, file=sys.stderr)
         print("                  : detected platform '%s'" % sys.platform, file=sys.stderr)
         return False

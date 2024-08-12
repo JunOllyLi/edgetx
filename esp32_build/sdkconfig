@@ -976,7 +976,7 @@ CONFIG_PCNT_ISR_IRAM_SAFE=y
 #
 # ESP-Driver:RMT Configurations
 #
-CONFIG_RMT_ISR_IRAM_SAFE=y
+# CONFIG_RMT_ISR_IRAM_SAFE is not set
 CONFIG_RMT_RECV_FUNC_IN_IRAM=y
 # CONFIG_RMT_ENABLE_DEBUG_LOG is not set
 # end of ESP-Driver:RMT Configurations

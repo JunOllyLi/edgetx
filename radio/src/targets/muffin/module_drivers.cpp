@@ -62,6 +62,7 @@ static const etx_module_t _internal_module = {
 #endif
 
 #if defined(HARDWARE_EXTERNAL_MODULE)
+#if 0
 static const etx_esp32_uart_hw_def_t extmod_uart_hw_def = {
     .uart_port = EXTMOD_UART_PORT,
     .rx_pin = EXTMOD_UART_RX,
@@ -69,7 +70,17 @@ static const etx_esp32_uart_hw_def_t extmod_uart_hw_def = {
     .fifoSize = 4096,
     .queueSize = 10
 };
-
+#else
+static const etx_rmt_uart_hw_def_t extmod_uart_hw_def = {
+    .rx_pin = EXTMOD_UART_RX,
+    .tx_pin = EXTMOD_UART_TX,
+    .memsize = 256,
+    .rx_task_stack_size = 1024 * 6,
+    .resolution_hz = 80000000,
+    .idle_threshold_in_ns = 180000,
+    .min_pulse_in_ns = 1000,
+};
+#endif
 /**
  * This driver is specific for Muffin, which connected the 4in1 MULTI internal module to
  * EXTMODULE port. This is to trick the multi.cpp thinks it is a serial port for the
@@ -90,8 +101,8 @@ static void* proxyExtUartSerialStart(void *hw_def, const etx_serial_init* params
         memcpy(&cfg, params, sizeof(etx_serial_init));
         cfg.polarity = ETX_Pol_Normal;
         cfg.direction = ETX_Dir_TX_RX;
-        real_pUart = ESPUartSerialDriver.init(hw_def, &cfg);
-        memcpy(&proxyExtUartSerialDriver, &ESPUartSerialDriver, sizeof(etx_serial_driver_t));
+        real_pUart = rmtuartSerialDriver.init(hw_def, &cfg);
+        memcpy(&proxyExtUartSerialDriver, &rmtuartSerialDriver, sizeof(etx_serial_driver_t));
         proxyExtUartSerialDriver.init = proxyExtUartSerialStart;
         proxyExtUartSerialDriver.deinit = proxyExtUartSerialStop;
     }
@@ -103,7 +114,7 @@ static void proxyExtUartSerialStop(void* ctx)
 {
     real_pUart_cnt--;
     if (real_pUart_cnt == 0) {
-        ESPUartSerialDriver.deinit(ctx);
+        rmtuartSerialDriver.deinit(ctx);
         real_pUart = NULL;
     }
 }

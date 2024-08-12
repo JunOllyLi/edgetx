@@ -170,6 +170,8 @@ static void esp32_rmt_tx_init(rmt_uart_t *port, etx_rmt_uart_hw_def_t *hw) {
     ESP_ERROR_CHECK(rmt_new_uart_encoder(hw, &port->params, &port->encoder));
 
     ESP_ERROR_CHECK(rmt_enable(port->tx));
+
+    rmtuartSerialDriver.sendByte((void*)port, 0xFF);
 }
 
 static void* rmtuartSerialStart(void *hw_def, const etx_serial_init* params)

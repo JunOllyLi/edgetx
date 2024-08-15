@@ -26,7 +26,15 @@ static gptimer_handle_t mixer_timer = NULL;
 
 static bool IRAM_ATTR alarm_mixer_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
 {
-    gptimer_stop(mixer_timer);
+    size_t usec = getMixerSchedulerPeriod();
+    gptimer_alarm_config_t alarm_config = {
+        .alarm_count = usec,
+        .reload_count = 0,
+        .flags = {
+            .auto_reload_on_alarm = true,
+        }
+    };
+    ESP_ERROR_CHECK(gptimer_set_alarm_action(mixer_timer, &alarm_config));
     mixerSchedulerISRTrigger();
     return pdFALSE;
 }
@@ -50,20 +58,20 @@ void mixerSchedulerStart()
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(mixer_timer, &cbs, NULL));
 
     ESP_ERROR_CHECK(gptimer_enable(mixer_timer));
-}
 
-void mixerSchedulerEnableTrigger()
-{
     size_t usec = getMixerSchedulerPeriod();
     gptimer_alarm_config_t alarm_config = {
         .alarm_count = usec,
         .reload_count = 0,
         .flags = {
-            .auto_reload_on_alarm = false,
+            .auto_reload_on_alarm = true,
         }
     };
     ESP_ERROR_CHECK(gptimer_set_alarm_action(mixer_timer, &alarm_config));
-    gptimer_set_raw_count(mixer_timer, 0);
     gptimer_start(mixer_timer);
+}
+
+void mixerSchedulerEnableTrigger()
+{
 }
 

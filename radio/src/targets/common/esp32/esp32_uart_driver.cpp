@@ -36,8 +36,7 @@ typedef struct {
 static esp32_uart_ctx_t uarts[SOC_UART_HP_NUM]; // TODO-MUFFIN init
 
 static inline esp32_uart_ctx_t *ctx_to_port(void* ctx) {
-    int p = (int)ctx;
-    return &uarts[p];
+    return (esp32_uart_ctx_t *)ctx;
 }
 
 static void espuart_setIdleCb(void* ctx, void (*on_idle)(void*), void* param) {
@@ -153,8 +152,8 @@ void* espUartSerialStart(void *hw_def, const etx_serial_init* params)
     uart_set_pin(port->port, hw->tx_pin, hw->rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     xTaskCreate(espuart_uart_event_task, "espuart_uart_event_task", 4096,
-        (void *)(port->port), 12, &port->rx_task);
-    return (void *)port->port;
+        (void *)port, 12, &port->rx_task);
+    return (void *)port;
 }
 
 void espUartSendByte(void* ctx, uint8_t byte)

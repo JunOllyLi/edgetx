@@ -26,7 +26,6 @@
 #include "opentx.h"
 #include "libopenui.h"
 #include "hal/adc_driver.h"
-#include "aux_serial_driver.h"
 #include "hw_intmodule.h"
 #include "hw_extmodule.h"
 #include "hw_serial.h"
@@ -78,7 +77,7 @@ static void onSetWiFiEnabled(uint8_t newValue) {
 }
 
 RadioWiFiPage::RadioWiFiPage():
-  PageTab(STR_HARDWARE, ICON_RADIO_HARDWARE)
+  PageTab(STR_HARDWARE, ICON_RADIO_WIFI)
 {
 }
 

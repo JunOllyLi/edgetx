@@ -498,6 +498,18 @@ static void pulsesEnableModule(uint8_t module, uint8_t protocol)
       break;
 #endif
 
+#if defined(ESPNOW)
+    case PROTOCOL_CHANNELS_ESPNOW:
+      _init_module(module, &EspNowDriver);
+      break;
+#endif
+
+#if defined(BT_POWERUP)
+    case PROTOCOL_CHANNELS_BT_POWERUP:
+      _init_module(module, &BtPowerUPDriver);
+      break;
+#endif
+
     default:
       break;
   }

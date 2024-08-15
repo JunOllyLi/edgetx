@@ -4,3 +4,4 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
+// empty file to satisfy the ESP-IDF build toolchain

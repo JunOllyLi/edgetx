@@ -38,96 +38,87 @@ static sdmmc_card_t* card = &sdcard;
 
 static DSTATUS sdcard_spi_initialize(BYTE lun)
 {
-  if (!card_present) {
+    if (!card_present) {
 #ifdef SD_DEDICATED_SPI
-    spi_bus_config_t bus_config = {
-        .mosi_io_num = SDSPI_MOSI,
-        .miso_io_num = SDSPI_MISO,
-        .sclk_io_num = SDSPI_CLK,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-    };
-    config.slot = SD_SPI_HOST;
-    esp_err_t err = spi_bus_initialize((spi_host_device_t)config.slot, &bus_config, SPI_DMA_CH_AUTO);
+        spi_bus_config_t bus_config = {
+            .mosi_io_num = SDSPI_MOSI,
+            .miso_io_num = SDSPI_MISO,
+            .sclk_io_num = SDSPI_CLK,
+            .quadwp_io_num = -1,
+            .quadhd_io_num = -1,
+        };
+        config.slot = SD_SPI_HOST;
+        ESP_ERROR_CHECK(spi_bus_initialize((spi_host_device_t)config.slot, &bus_config, SPI_DMA_CH_AUTO));
 #endif
-    dev_config.host_id = (spi_host_device_t)config.slot;
+        dev_config.host_id = (spi_host_device_t)config.slot;
 
-    dev_config.gpio_cs = SDCARD_CS_GPIO;
-    sdspi_host_init();
-    sdspi_host_init_device(&dev_config, &handle);
+        dev_config.gpio_cs = SDCARD_CS_GPIO;
+        sdspi_host_init();
+        sdspi_host_init_device(&dev_config, &handle);
 
-    config.slot = handle;
-    if (0 == sdmmc_card_init(&config, card)) {
-      card_present = true;
-    } else {
-      sdspi_host_remove_device(handle);
-      sdspi_host_deinit();
+        config.slot = handle;
+        if (0 == sdmmc_card_init(&config, card)) {
+            card_present = true;
+        } else {
+            sdspi_host_remove_device(handle);
+            sdspi_host_deinit();
+        }
     }
-  }
-  return 0;
+    return 0;
 }
 
 static DSTATUS sdcard_spi_status(BYTE lun)
 {
-  DSTATUS stat = 0;
-
-#if 0
-#if defined(SD_PRESENT_GPIO)
-  if (LL_GPIO_IsInputPinSet(SD_PRESENT_GPIO, SD_PRESENT_GPIO_PIN)) {
-    stat |= STA_NODISK;
-  }
-#endif
-#endif
-
-  return stat;
+    DSTATUS stat = 0;
+    return stat;
 }
 
 static DRESULT sdcard_spi_read(BYTE lun, BYTE * buff, DWORD sector, UINT count)
 {
-  // TRACE("disk_read %d %p %10d %d", lun, buff, sector, count);
+    // TRACE("disk_read %d %p %10d %d", lun, buff, sector, count);
 
-  DRESULT state = RES_OK;
-  if (0 != sdmmc_read_sectors(card, buff, sector, count)) {
-    state = RES_ERROR;
-  }
+    DRESULT state = RES_OK;
+    if (0 != sdmmc_read_sectors(card, buff, sector, count)) {
+        state = RES_ERROR;
+    }
 
-  return state;
+    return state;
 }
 
 static DRESULT sdcard_spi_write(BYTE lun, const BYTE* buff, DWORD sector, UINT count)
 {
-  // TRACE("disk_write %d %p %10d %d", lun, buff, sector, count);
+    // TRACE("disk_write %d %p %10d %d", lun, buff, sector, count);
 
-  DRESULT res = RES_OK;
-  if (0 != sdmmc_write_sectors(card, buff, sector, count)) {
-    res = RES_ERROR;
-  }
-  return res;
+    DRESULT res = RES_OK;
+    if (0 != sdmmc_write_sectors(card, buff, sector, count)) {
+        res = RES_ERROR;
+    }
+    return res;
 }
 
 static DRESULT sdcard_spi_ioctl(BYTE lun, BYTE ctrl, void *buff)
 {
-  assert(card);
-  switch(ctrl) {
+    assert(card);
+    switch(ctrl) {
     case CTRL_SYNC:
-      return RES_OK;
+        return RES_OK;
     case GET_SECTOR_COUNT:
-      *((DWORD*) buff) = card->csd.capacity;
-      return RES_OK;
+        *((DWORD*) buff) = card->csd.capacity;
+        return RES_OK;
     case GET_SECTOR_SIZE:
-      *((WORD*) buff) = card->csd.sector_size;
-      return RES_OK;
+        *((WORD*) buff) = card->csd.sector_size;
+        return RES_OK;
     case GET_BLOCK_SIZE:
-      return RES_ERROR;
-  }
-  return RES_ERROR;
+        return RES_ERROR;
+    }
+    return RES_ERROR;
 }
 
 const diskio_driver_t sdcard_spi_driver = {
-  .initialize = sdcard_spi_initialize,
-  .status = sdcard_spi_status,
-  .read = sdcard_spi_read,
-  .write = sdcard_spi_write,
-  .ioctl = sdcard_spi_ioctl,
+    .initialize = sdcard_spi_initialize,
+    .status = sdcard_spi_status,
+    .read = sdcard_spi_read,
+    .write = sdcard_spi_write,
+    .ioctl = sdcard_spi_ioctl,
 };
 

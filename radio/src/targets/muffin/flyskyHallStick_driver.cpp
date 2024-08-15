@@ -26,9 +26,8 @@
 #include "esp32_uart_driver.h"
 #include "crc.h"
 
-#if CONFIG_ESP_CONSOLE_UART_NUM == 0
-// UART_NUM_0 used for console output. Likely debugging USB stuff.
-// Use RMT UART for gimbal. It works fine but roughly 1 out of 10000 packets gets CRC error.
+#if FLYSKY_UART_PORT == USE_RMT
+// Use RMT UART for gimbal. It works fine, except for roughly 1 out of 10000 packets gets CRC error.
 static const etx_rmt_uart_hw_def_t gimbal_uart_hw_def = {
     .rx_pin = FLYSKY_UART_RX_PIN,
     .tx_pin = FLYSKY_UART_TX_PIN,
@@ -41,7 +40,7 @@ static const etx_rmt_uart_hw_def_t gimbal_uart_hw_def = {
 static const etx_serial_driver_t *pUart = &rmtuartSerialDriver;
 #else
 static const etx_esp32_uart_hw_def_t gimbal_uart_hw_def = {
-    .uart_port = UART_NUM_0,
+    .uart_port = FLYSKY_UART_PORT,
     .rx_pin = FLYSKY_UART_RX_PIN,
     .tx_pin = FLYSKY_UART_TX_PIN,
     .fifoSize = 4096,
@@ -51,10 +50,10 @@ static const etx_serial_driver_t *pUart = &ESPUartSerialDriver;
 #endif
 
 static etx_serial_init param = {
-  .baudrate = FLYSKY_HALL_BAUDRATE,
-  .encoding = ETX_Encoding_8N1,
-  .direction = ETX_Dir_RX,
-  .polarity = ETX_Pol_Normal
+    .baudrate = FLYSKY_HALL_BAUDRATE,
+    .encoding = ETX_Encoding_8N1,
+    .direction = ETX_Dir_RX,
+    .polarity = ETX_Pol_Normal
 };
 
 static STRUCT_HALL HallProtocol = { 0 };
@@ -63,128 +62,121 @@ static void* _fs_usart_ctx = nullptr;
 
 static int _fs_get_byte(uint8_t* data)
 {
-  return pUart->getByte(_fs_usart_ctx, data);
+    return pUart->getByte(_fs_usart_ctx, data);
 }
 
 static uint32_t crc_ok_cnt = 0;
 static uint32_t crc_err_cnt = 0;
 static void _fs_parse(STRUCT_HALL *hallBuffer, unsigned char ch)
 {
-  switch (hallBuffer->status) {
+    switch (hallBuffer->status) {
     case GET_START:
-      if (FLYSKY_HALL_PROTOLO_HEAD == ch) {
-        hallBuffer->head = FLYSKY_HALL_PROTOLO_HEAD;
-        hallBuffer->status = GET_ID;
-        hallBuffer->msg_OK = 0;
-      }
-      break;
-
-    case GET_ID:
-      hallBuffer->hallID.ID = ch;
-      hallBuffer->status = GET_LENGTH;
-      break;
-
-    case GET_LENGTH:
-      hallBuffer->length = ch;
-      hallBuffer->dataIndex = 0;
-      hallBuffer->status = GET_DATA;
-      if (0 == hallBuffer->length) {
-        hallBuffer->status = GET_CHECKSUM;
-        hallBuffer->checkSum = 0;
-      }
-      break;
-
-    case GET_DATA:
-      hallBuffer->data[hallBuffer->dataIndex++] = ch;
-      if (hallBuffer->dataIndex >= hallBuffer->length) {
-        hallBuffer->checkSum = 0;
-        hallBuffer->dataIndex = 0;
-        hallBuffer->status = GET_STATE;
-      }
-      break;
-
-    case GET_STATE:
-      hallBuffer->checkSum = 0;
-      hallBuffer->dataIndex = 0;
-      hallBuffer->status = GET_CHECKSUM;
-      // fall through!
-
-    case GET_CHECKSUM:
-      hallBuffer->checkSum |= ch << ((hallBuffer->dataIndex++) * 8);
-      if (hallBuffer->dataIndex >= 2) {
-        hallBuffer->dataIndex = 0;
-        hallBuffer->status = CHECKSUM;
-        // fall through!
-      } else {
+        if (FLYSKY_HALL_PROTOLO_HEAD == ch) {
+            hallBuffer->head = FLYSKY_HALL_PROTOLO_HEAD;
+            hallBuffer->status = GET_ID;
+            hallBuffer->msg_OK = 0;
+        }
         break;
-      }
-
+    case GET_ID:
+        hallBuffer->hallID.ID = ch;
+        hallBuffer->status = GET_LENGTH;
+        break;
+    case GET_LENGTH:
+        hallBuffer->length = ch;
+        hallBuffer->dataIndex = 0;
+        hallBuffer->status = GET_DATA;
+        if (0 == hallBuffer->length) {
+            hallBuffer->status = GET_CHECKSUM;
+            hallBuffer->checkSum = 0;
+        }
+        break;
+    case GET_DATA:
+        hallBuffer->data[hallBuffer->dataIndex++] = ch;
+        if (hallBuffer->dataIndex >= hallBuffer->length) {
+            hallBuffer->checkSum = 0;
+            hallBuffer->dataIndex = 0;
+            hallBuffer->status = GET_STATE;
+        }
+        break;
+    case GET_STATE:
+        hallBuffer->checkSum = 0;
+        hallBuffer->dataIndex = 0;
+        hallBuffer->status = GET_CHECKSUM;
+        // fall through!
+    case GET_CHECKSUM:
+        hallBuffer->checkSum |= ch << ((hallBuffer->dataIndex++) * 8);
+        if (hallBuffer->dataIndex >= 2) {
+            hallBuffer->dataIndex = 0;
+            hallBuffer->status = CHECKSUM;
+            // fall through!
+        } else {
+            break;
+        }
     case CHECKSUM:
-      if (hallBuffer->checkSum ==
-          crc16(CRC_1021, &hallBuffer->head, hallBuffer->length + 3, 0xffff)) {
-        hallBuffer->msg_OK = 1;
-        crc_ok_cnt++;
-      } else {
-        crc_err_cnt++;
-        TRACE("Gimbal CRC err: %d, OK: %d", crc_err_cnt, crc_ok_cnt);
-      }
-      hallBuffer->status = GET_START;
-      break;
-  }
+        if (hallBuffer->checkSum ==
+                crc16(CRC_1021, &hallBuffer->head, hallBuffer->length + 3, 0xffff)) {
+            hallBuffer->msg_OK = 1;
+            crc_ok_cnt++;
+        } else {
+            crc_err_cnt++;
+            TRACE("Gimbal CRC err: %d, OK: %d", crc_err_cnt, crc_ok_cnt);
+        }
+        hallBuffer->status = GET_START;
+        break;
+    }
 }
 
 static volatile bool _fs_gimbal_detected;
 
 static void flysky_gimbal_loop(void*)
 {
-  uint8_t byte;
+    uint8_t byte;
 
-  while (_fs_get_byte(&byte)) {
-    HallProtocol.index++;
+    while (_fs_get_byte(&byte)) {
+        HallProtocol.index++;
 
-    _fs_parse(&HallProtocol, byte);
-    if (HallProtocol.msg_OK) {
-      HallProtocol.msg_OK = 0;
-      HallProtocol.stickState = HallProtocol.data[HallProtocol.length - 1];
+        _fs_parse(&HallProtocol, byte);
+        if (HallProtocol.msg_OK) {
+            HallProtocol.msg_OK = 0;
+            HallProtocol.stickState = HallProtocol.data[HallProtocol.length - 1];
 
-      switch (HallProtocol.hallID.hall_Id.receiverID) {
-        case TRANSFER_DIR_TXMCU:
-          if (HallProtocol.hallID.hall_Id.packetID ==
-              FLYSKY_HALL_RESP_TYPE_VALUES) {
-            int16_t* p_values = (int16_t*)HallProtocol.data;
-            uint16_t* adcValues = getAnalogValues();
-            for (uint8_t i = 0; i < 4; i++) {
-              adcValues[i] = FLYSKY_OFFSET_VALUE - p_values[i];
+            switch (HallProtocol.hallID.hall_Id.receiverID) {
+            case TRANSFER_DIR_TXMCU:
+                if (HallProtocol.hallID.hall_Id.packetID == FLYSKY_HALL_RESP_TYPE_VALUES) {
+                    int16_t* p_values = (int16_t*)HallProtocol.data;
+                    uint16_t* adcValues = getAnalogValues();
+                    for (uint8_t i = 0; i < 4; i++) {
+                        adcValues[i] = FLYSKY_OFFSET_VALUE - p_values[i];
+                    }
+                    //TRACE("Gimbal reading: %d %d %d %d", adcValues[0], adcValues[1], adcValues[2], adcValues[3]);
+                }
+                break;
             }
-            //TRACE("Gimbal reading: %d %d %d %d", adcValues[0], adcValues[1], adcValues[2], adcValues[3]);
-          }
-          break;
-      }
-      _fs_gimbal_detected = true;
+            _fs_gimbal_detected = true;
+        }
     }
-  }
 }
 
 static void flysky_gimbal_deinit()
 {
-  pUart->deinit(_fs_usart_ctx);
+    pUart->deinit(_fs_usart_ctx);
 }
 
 bool flysky_gimbal_init()
 {
-  _fs_gimbal_detected = false;
-  _fs_usart_ctx = pUart->init((void *)&gimbal_uart_hw_def, &param);
-  pUart->setIdleCb(_fs_usart_ctx, flysky_gimbal_loop, 0);
+    _fs_gimbal_detected = false;
+    _fs_usart_ctx = pUart->init((void *)&gimbal_uart_hw_def, &param);
+    pUart->setIdleCb(_fs_usart_ctx, flysky_gimbal_loop, 0);
 
-  // Wait 70ms for FlySky gimbals to respond. According to LA trace, minimally 23ms is required
-  for (uint8_t i = 0; i < 70; i++) {
-    RTOS_WAIT_MS(1);
-    if (_fs_gimbal_detected) {
-      // Mask the first 4 inputs (sticks)
-      return true;
+    // Wait 70ms for FlySky gimbals to respond. According to LA trace, minimally 23ms is required
+    for (uint8_t i = 0; i < 70; i++) {
+        RTOS_WAIT_MS(1);
+        if (_fs_gimbal_detected) {
+            // Mask the first 4 inputs (sticks)
+            return true;
+        }
     }
-  }
 
-  flysky_gimbal_deinit();
-  return false;
+    flysky_gimbal_deinit();
+    return false;
 }

@@ -119,6 +119,9 @@ static const uint8_t mask_radio_global_functions[] = {
 static const uint8_t mask_radio_hardware[] = {
 #include "mask_radio_hardware.lbm"
 };
+static const uint8_t mask_radio_wifi[] = {
+#include "mask_radio_wifi.lbm"
+};
 static const uint8_t mask_radio_sd_browser[] = {
 #include "mask_radio_sd_browser.lbm"
 };
@@ -254,6 +257,7 @@ static const _BuiltinIcon _builtinIcons[] = {
     {ICON_RADIO_GLOBAL_FUNCTIONS, mask_radio_global_functions},
     {ICON_RADIO_TRAINER, mask_radio_trainer},
     {ICON_RADIO_HARDWARE, mask_radio_hardware},
+    {ICON_RADIO_WIFI, mask_radio_wifi},
     {ICON_RADIO_CALIBRATION, mask_radio_calibration},
     {ICON_RADIO_EDIT_THEME, mask_radio_edit_theme},
     {ICON_RADIO_VERSION, mask_radio_version},

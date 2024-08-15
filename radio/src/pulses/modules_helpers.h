@@ -446,12 +446,8 @@ static const int8_t maxChannelsModules_M8[] = {
   6, // MODULE_TYPE_FLYSKY_AFHDS2A: 14 channels
   10,// MODULE_TYPE_FLYSKY_AFHDS3: 18 channels
   4, // MODULE_TYPE_LEMON_DSMP: 12 channels for DSMX
-#if defined(ESPNOW)
   24, // MODULE_TYPE_ESPNOW
-#endif
-#if defined(BT_POWERUP)
   0, // MODULE_TYPE_BT_POWERUP
-#endif
 };
 
 static_assert(MODULE_TYPE_COUNT == sizeof(maxChannelsModules_M8),

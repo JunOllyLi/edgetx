@@ -57,16 +57,16 @@
 #define ADC_EXT_SAMPTIME                30
 
 #define ADC_EXT_CHANNELS						\
-  { ADC_CHANNEL_POT1, ADC_CHANNEL_POT2, ADC_CHANNEL_BATT, ADC_CHANNEL_RTC_BAT }
+    { ADC_CHANNEL_POT1, ADC_CHANNEL_POT2, ADC_CHANNEL_BATT, ADC_CHANNEL_RTC_BAT }
 
 #define ADC_DIRECTION {       \
     0,0,0,0, /* gimbals */    \
     0,0,     /* pots */       \
     0,	     /* vbat */       \
     0 	     /* RTC bat */       \
-  }
+}
 
-#define ADC_VREF_PREC2                330
+#define ADC_VREF_PREC2                233
 
 
 // For MCP23017 based GPIO extension:

@@ -28,12 +28,12 @@ static usbMode selectedUsbMode = USB_UNSELECTED_MODE;
 
 int getSelectedUsbMode()
 {
-  return selectedUsbMode;
+    return selectedUsbMode;
 }
 
 void setSelectedUsbMode(int mode)
 {
-  selectedUsbMode = usbMode(mode);
+    selectedUsbMode = usbMode(mode);
 }
 
 void usbInit()
@@ -51,5 +51,5 @@ void usbStop()
 
 bool usbStarted()
 {
-  return false;
+    return false;
 }

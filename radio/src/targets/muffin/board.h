@@ -23,11 +23,9 @@
 
 #include "board_common.h"
 
-const etx_serial_port_t* auxSerialGetPort(int port_nr);
+#define auxSerialGetPort(port_nr) nullptr
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++TODO-MUFFIN
-
-#define pwrOffPressed() false
 
 #define BACKLIGHT_LEVEL_MAX     100
 #define BACKLIGHT_LEVEL_MIN     10
@@ -71,16 +69,25 @@ From Kconfig
 
 #define BACKLITE_PIN GPIO_NUM_3
 
+#define USE_RMT -1
+#if CONFIG_ESP_CONSOLE_UART_NUM == 0
+#define FLYSKY_UART_PORT USE_RMT
 #define EXTMOD_UART_PORT UART_NUM_1
-#define EXTMOD_UART_TX GPIO_NUM_8  // EXTMOD_RX
-#define EXTMOD_UART_RX GPIO_NUM_15 // EXTMOD_TX
-// Use RMT for Flysky UART
+#define INTMOD_UART_PORT UART_NUM_2
+#else
+#define FLYSKY_UART_PORT UART_NUM_0
+#define EXTMOD_UART_PORT UART_NUM_1
+#define INTMOD_UART_PORT UART_NUM_2
+#endif
+
 #define FLYSKY_UART_RX_PIN GPIO_NUM_4  // GIMBLE_TX
 #define FLYSKY_UART_TX_PIN GPIO_NUM_5  // GIMBLE_RX
 
-#define INTMOD_UART_PORT UART_NUM_2
 #define INTMOD_ESP_UART_TX GPIO_NUM_2 // INTMOD_RX
 #define INTMOD_ESP_UART_RX GPIO_NUM_1 // INTMOD_TX
+
+#define EXTMOD_UART_TX GPIO_NUM_8  // EXTMOD_RX
+#define EXTMOD_UART_RX GPIO_NUM_15 // EXTMOD_TX
 
 #define I2C_MASTER_NUM I2C_NUM_0
 
@@ -102,11 +109,13 @@ uint32_t pwrCheck();
 void pwrOn();
 void pwrOff();
 bool pwrPressed();
+bool pwrOffPressed();
 
 void INTERNAL_MODULE_ON(void);
 void INTERNAL_MODULE_OFF(void);
 void EXTERNAL_MODULE_ON(void);
 void EXTERNAL_MODULE_OFF(void);
+void internal_protocol_led_on(bool on);
 
 struct TouchState getInternalTouchState();
 struct TouchState touchPanelRead();
@@ -140,23 +149,12 @@ void audioConsumeCurrentBuffer();
 #define audioDisableIrq()               taskDISABLE_INTERRUPTS()
 #define audioEnableIrq()                taskENABLE_INTERRUPTS()
 
-void hapticOff();
-void hapticOn();
+#define hapticOff()
+#define hapticOn()
 
 // Second serial port driver
 #define DEBUG_BAUDRATE                  115200
 #define LUA_DEFAULT_BAUDRATE            115200
-
-// LED driver
-void ledInit();
-void ledOff();
-void ledRed();
-void ledGreen();
-void ledBlue();
-#if defined(FUNCTION_SWITCHES)
-void fsLedOff(uint8_t);
-void fsLedOn(uint8_t);
-#endif
 
 #define LCD_DEPTH                       16
 void lcdRefresh();
@@ -179,16 +177,10 @@ void setTopRssi(uint32_t rssi);
 void setTopBatteryState(int state, uint8_t blinking);
 void setTopBatteryValue(uint32_t volts);
 
-#if defined(__cplusplus)
-#include "fifo.h"
-
 #if defined(CROSSFIRE)
 #define TELEMETRY_FIFO_SIZE             128
 #else
 #define TELEMETRY_FIFO_SIZE             64
-#endif
-
-extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 #endif
 
 #define BATT_SCALE 1251
@@ -198,8 +190,8 @@ extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 
 // WiFi
 
-#ifndef ESP_NOW_ETH_ALEN
-#define ESP_NOW_ETH_ALEN 6
+#ifndef ESPNOW_ETH_ALEN
+#define ESPNOW_ETH_ALEN 6
 #endif
 
 void initWiFi();

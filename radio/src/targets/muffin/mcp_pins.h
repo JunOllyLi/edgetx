@@ -11,6 +11,7 @@
 #define MCP_5V_EN  (8 * 3 + 2)  // G1B2
 #define MCP_INTMOD_5V_EN  (8 * 3 + 3)  // G1B3
 #define MCP_INTMOD_BOOT   (8 * 3 + 4)  // G1B4
-#define MCP_EXTMOD_5V_EN   (8 * 3 + 7)  // G1B7
+#define MCP_INTERNAL_PROTO_LED   (8 * 3 + 5)  // G1B5
+#define MCP_EXTMOD_5V_EN  (8 * 3 + 7)  // G1B7
 
 #endif // _MCP_PINS_FOR_BOARD_H_

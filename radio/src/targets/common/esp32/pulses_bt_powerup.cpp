@@ -23,12 +23,12 @@
 #define RDR_STICK_CHANNEL 3  // channel 4
 
 extern "C" {
-  void esp_start_ble_scan(void);
-  void ble_write_pwrup_thottle(uint8_t data);
-  void ble_write_pwrup_rudder(int8_t data);
-  void esp_end_ble(void);
-  void task_pwrup(void * pdata);
-  extern TaskHandle_t pwrup_task_handle;
+    void esp_start_ble_scan(void);
+    void ble_write_pwrup_thottle(uint8_t data);
+    void ble_write_pwrup_rudder(int8_t data);
+    void esp_end_ble(void);
+    void task_pwrup(void * pdata);
+    extern TaskHandle_t pwrup_task_handle;
 }
 
 #define TASKPWRUP_STACK_SIZE (1024 * 4)
@@ -38,61 +38,65 @@ static RTOS_TASK_HANDLE taskIdPWRUP;
 EXT_RAM_BSS_ATTR RTOS_DEFINE_STACK(taskIdPWRUP, taskPWRUP_stack, TASKPWRUP_STACK_SIZE);
 static void* BtPowerUPInit(uint8_t module)
 {
-  if (NULL == pwrup_task_handle) {
-    RTOS_CREATE_TASK_EX(taskIdPWRUP,task_pwrup,"PowerUP task",taskPWRUP_stack,TASKPWRUP_STACK_SIZE,TASKPWRUP_PRIO,MENU_TASK_CORE);
-    pwrup_task_handle = taskIdPWRUP.rtos_handle;
-  }
+    if (NULL == pwrup_task_handle) {
+        RTOS_CREATE_TASK_EX(taskIdPWRUP,task_pwrup,"PowerUP task",taskPWRUP_stack,TASKPWRUP_STACK_SIZE,TASKPWRUP_PRIO,MENU_TASK_CORE);
+        pwrup_task_handle = taskIdPWRUP.rtos_handle;
+    }
 
-  esp_start_ble_scan();
-  return (void *)1;
+    esp_start_ble_scan();
+    return (void *)1;
 }
 
 static void BtPowerUPDeInit(void* context)
 {
-  esp_end_ble();
+    esp_end_ble();
 }
 
 static void BtPowerUPSetupPulses(void* context, int16_t* channels, uint8_t nChannels)
 {
-  // nothing to do
+    // nothing to do
 }
 
-static void BtPowerUPSendPulses(void* context)
+static void BtPowerUPSendPulses(void* context, uint8_t* buffer, int16_t* channels, uint8_t nChannels)
 {
-  static int prevThr = 0;
-  static int prevRdr = 0;
-  uint8_t thr = (uint8_t)((channelOutputs[THR_STICK_CHANNEL] + ((STICK_MAX_VALUE - STICK_MIN_VALUE) / 2)) * 254 /
-      (STICK_MAX_VALUE - STICK_MIN_VALUE));
-  int8_t rdr = (0 <= channelOutputs[RDR_STICK_CHANNEL]) ?
-      (int8_t)(channelOutputs[RDR_STICK_CHANNEL] * (-128) / STICK_MAX_VALUE) :
-      (int8_t)(channelOutputs[RDR_STICK_CHANNEL] * 127 / STICK_MIN_VALUE);
+    static int prevThr = 0;
+    static int prevRdr = 0;
+    uint8_t thr = (uint8_t)((channelOutputs[THR_STICK_CHANNEL] + ((STICK_MAX_VALUE - STICK_MIN_VALUE) / 2)) * 254 /
+            (STICK_MAX_VALUE - STICK_MIN_VALUE));
+    int8_t rdr = (0 <= channelOutputs[RDR_STICK_CHANNEL]) ?
+            (int8_t)(channelOutputs[RDR_STICK_CHANNEL] * (-128) / STICK_MAX_VALUE) :
+            (int8_t)(channelOutputs[RDR_STICK_CHANNEL] * 127 / STICK_MIN_VALUE);
     
-  static uint32_t thrTick = 0;
+    static uint32_t thrTick = 0;
 
-  uint32_t now = RTOS_GET_MS();
-  if (prevThr != thr) {
-    prevThr = thr;
-    ble_write_pwrup_thottle(thr);
-  } else {
-    // TODO: seems the module would power down motor if the value was not sent or changed for a while. So do some kind of dithering here
-    if (now - thrTick > 1000) {
-      if (254 == thr) {
-        ble_write_pwrup_thottle(thr + ((esp_random() > (UINT32_MAX / 2)) ? 0 : -1));
-      } else if (2 < thr) {
-        ble_write_pwrup_thottle(thr + ((esp_random() > (UINT32_MAX / 2)) ? 1 : -1));
-      }
-      thrTick = now;
+    uint32_t now = RTOS_GET_MS();
+    if (prevThr != thr) {
+        prevThr = thr;
+        ble_write_pwrup_thottle(thr);
+    } else {
+        // TODO: seems the module would power down motor if the value was not sent or changed for a while. So do some kind of dithering here
+        if (now - thrTick > 1000) {
+            static int offset = 0;
+            if (offset == 0) {
+                offset = -1;
+            } else {
+                offset = 0;
+            }
+            if (0 != thr) {
+                ble_write_pwrup_thottle(thr + offset);
+            }
+            thrTick = now;
+        }
     }
-  }
-  if (prevRdr != rdr) {
-    prevRdr = rdr;
-    ble_write_pwrup_rudder(rdr);
-  }
+    if (prevRdr != rdr) {
+        prevRdr = rdr;
+        ble_write_pwrup_rudder(rdr);
+    }
 }
 
 static int BtPowerUPGetByte(void* context, uint8_t* data)
 {
-return 0;
+    return 0;
 }
 
 static void BtPowerUPProcessData(void* context, uint8_t data, uint8_t* buffer, uint8_t* len)
@@ -101,14 +105,10 @@ static void BtPowerUPProcessData(void* context, uint8_t data, uint8_t* buffer, u
 
 #include "hal/module_driver.h"
 
-const etx_module_driver_t BtPowerUPDriver = {
-#if 0  // TODO-MUFFIN 
-  .protocol = PROTOCOL_CHANNELS_ESPNOW,
-  .init = BtPowerUPInit,
-  .deinit = BtPowerUPDeInit,
-  .setupPulses = BtPowerUPSetupPulses,
-  .sendPulses = BtPowerUPSendPulses,
-  .getByte = BtPowerUPGetByte,
-  .processData = BtPowerUPProcessData,
-#endif
+const etx_proto_driver_t BtPowerUPDriver = {
+    .protocol = PROTOCOL_CHANNELS_ESPNOW,
+    .init = BtPowerUPInit,
+    .deinit = BtPowerUPDeInit,
+    .sendPulses = BtPowerUPSendPulses,
+    //.processData = BtPowerUPProcessData,
 };

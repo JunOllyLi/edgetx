@@ -36,6 +36,8 @@
 
 #include "driver/i2c_master.h"
 #include "flyskyHallStick_driver.h"
+#include "nimble/nimble_port.h"
+#include "nimble/nimble_port_freertos.h"
 
 extern void ads1015_adc_init(void);
 
@@ -64,8 +66,8 @@ static void board_init_i2c(void) {
     toplcd_i2c_bus_handle = i2c_0_bus_handle;
     ads_i2c_bus_handle = i2c_0_bus_handle;
 }
-#if 0
-// just to keep a reference of the layout so they do not get optimized out by compiler.
+
+// keep a reference of the layouts so they do not get optimized out by compiler.
 extern LayoutFactory Layout1P2;
 extern LayoutFactory Layout1P3;
 extern LayoutFactory layout1x1;
@@ -80,61 +82,59 @@ extern LayoutFactory layout2x3;
 extern LayoutFactory layout2x4;
 extern LayoutFactory layout4P2;
 LayoutFactory *layouts[20] = {
-  &Layout1P2, &Layout1P3, &layout1x1, &Layout1x2, &Layout1x3, &Layout1x4,
-  &layout2P1, &Layout2P3, &Layout2x1, &layout2x2, &layout2x3, &layout2x4,
-  &layout4P2
+    &Layout1P2, &Layout1P3, &layout1x1, &Layout1x2, &Layout1x3, &Layout1x4,
+    &layout2P1, &Layout2P3, &Layout2x1, &layout2x2, &layout2x3, &layout2x4,
+    &layout4P2
 };
-#endif
 
 void boardInit()
 {
-  /* Initialize NVS — it is used to store PHY calibration data */
-  esp_err_t ret = nvs_flash_init();
-  if  (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-  }
-  ESP_ERROR_CHECK(ret);
+    /* Initialize NVS — it is used to store PHY calibration data */
+    esp_err_t ret = nvs_flash_init();
+    if  (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
-  //nimble_port_init();
+    nimble_port_init();
 
-  board_init_i2c();
+    board_init_i2c();
 
-  keysInit();
-  rtcInit();
+    keysInit();
+    rtcInit();
 
-  sdInit();
+    sdInit();
 
-  //backlightInit();
-  initWiFi();
-  init2MhzTimer();
+    //backlightInit();
+    initWiFi();
+    init2MhzTimer();
+    
+    audioInit();
+    ads1015_adc_init();
 
-  if (flysky_gimbal_init()) {
-    TRACE("Flysky Hall Gimbal detected");
-  } else {
-    TRACE_ERROR("Flysky Hall Gimbal NOT detected");
-  }
-  audioInit();
+    if (flysky_gimbal_init()) {
+        TRACE("Flysky Hall Gimbal detected");
+    } else {
+        TRACE_ERROR("Flysky Hall Gimbal NOT detected");
+    }
 
-  ads1015_adc_init();
-  //toplcdInit();
+    //toplcdInit();
 }
 
 void boardOff()
 {
-  pwrOff();
+    pwrOff();
 }
 
 int usbPlugged() {
-  return 0;// TODO-MUFFIN
+    return 0;// TODO-MUFFIN
 }
 
 void enableVBatBridge() {
-
 }
 void disableVBatBridge() {
-
 }
 bool isVBatBridgeEnabled() {
-  return false;
+    return false;
 }

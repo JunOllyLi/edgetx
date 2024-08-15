@@ -532,7 +532,7 @@ PACK(struct ModuleData {
 #if defined(ESPNOW)
     NOBACKUP(PACK(struct {
       uint8_t ch;
-      uint8_t rx_mac_addr[ESP_NOW_ETH_ALEN];
+      uint8_t rx_mac_addr[ESPNOW_ETH_ALEN];
     }) espnow);
 #endif
   } NAME(mod) FUNC(select_mod_type);

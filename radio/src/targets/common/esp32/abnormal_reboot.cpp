@@ -23,5 +23,5 @@
 
 uint32_t abnormalRebootGetCause()
 {
-  return ARC_None;
+    return ARC_None;
 }

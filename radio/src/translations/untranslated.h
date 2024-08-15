@@ -67,7 +67,9 @@
     "XJT Lite",                      \
     "AFHDS2A",                       \
     "AFHDS3",                        \
-    TR("Lemon DSMP","LemonRx DSMP")
+    TR("Lemon DSMP","LemonRx DSMP"), \
+    "ESPNOW",                        \
+    "POWERUP_BLUETOOTH",             \
 
 #define TR_XJT_ACCST_RF_PROTOCOLS      "D16","D8","LR12"
 #define TR_ISRM_RF_PROTOCOLS           "ACCESS","D16","LR12"

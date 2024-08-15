@@ -32,21 +32,23 @@ void backlightInit() {
 
 static uint8_t prev_duty_cycle = 0;
 void backlightEnable(uint8_t level) {
-  uint16_t l = (((uint16_t)level) * (100 - MIN_PWM_DUTY_CYCLE) / BACKLIGHT_LEVEL_MAX) + MIN_PWM_DUTY_CYCLE;
-  if (l != prev_duty_cycle) {
-    prev_duty_cycle = l;
-    TRACE("Set backlight level %d/%d duty cycle %d", level, BACKLIGHT_LEVEL_MAX, l);
-    disp_backlight_set(bklite_handle, l);
-  }
-  bkl_enabled = true;
+    uint16_t l = (((uint16_t)level) * (100 - MIN_PWM_DUTY_CYCLE) / BACKLIGHT_LEVEL_MAX) + MIN_PWM_DUTY_CYCLE;
+    if (l != prev_duty_cycle) {
+        prev_duty_cycle = l;
+        TRACE("Set backlight level %d/%d duty cycle %d", level, BACKLIGHT_LEVEL_MAX, l);
+        disp_backlight_set(bklite_handle, l);
+    }
+    bkl_enabled = true;
 }
 
 void backlightDisable() {
-  if (prev_duty_cycle != BLITE_OFF_DUTY_CYCLE) {
-    TRACE("backlight disable");
-    prev_duty_cycle = BLITE_OFF_DUTY_CYCLE;
-    disp_backlight_set(bklite_handle, BLITE_OFF_DUTY_CYCLE);
-  }
-  bkl_enabled = false;
+    if (prev_duty_cycle != BLITE_OFF_DUTY_CYCLE) {
+        TRACE("backlight disable");
+        prev_duty_cycle = BLITE_OFF_DUTY_CYCLE;
+        disp_backlight_set(bklite_handle, BLITE_OFF_DUTY_CYCLE);
+    }
+    bkl_enabled = false;
 }
-bool isBacklightEnabled() {return bkl_enabled;}
+bool isBacklightEnabled() {
+    return bkl_enabled;
+}

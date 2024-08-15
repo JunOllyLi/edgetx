@@ -55,177 +55,168 @@ StaticTask_t espnowTaskBuffer;
 
 void packet_prepare()
 {
-  packet.type = DATA;
-  packet.idx++;
-  packet.crc = 0;
-  xQueueReceive( xPulsesQueue, locChannelOutputs,0);
-  memcpy((void *)packet.ch,locChannelOutputs,sizeof(packet.ch));
-  packet.crc = crc16_le(0, (uint8_t const *) &packet, sizeof(packet));
+    packet.type = DATA;
+    packet.idx++;
+    packet.crc = 0;
+    xQueueReceive( xPulsesQueue, locChannelOutputs,0);
+    memcpy((void *)packet.ch,locChannelOutputs,sizeof(packet.ch));
+    packet.crc = crc16_le(0, (uint8_t const *) &packet, sizeof(packet));
 }
 
 void bind_packet_prepare()
 {
-  packet.type = BIND;
-  packet.idx = g_model.moduleData[INTERNAL_MODULE].espnow.ch;
-  xQueueReceive( xPulsesQueue, locChannelOutputs,0);
-  memcpy((void *)packet.ch,locChannelOutputs,sizeof(packet.ch));
-  packet.crc = 0;
-  packet.crc = crc16_le(0, (uint8_t const *) &packet, sizeof(packet));
+    packet.type = BIND;
+    packet.idx = g_model.moduleData[INTERNAL_MODULE].espnow.ch;
+    xQueueReceive( xPulsesQueue, locChannelOutputs,0);
+    memcpy((void *)packet.ch,locChannelOutputs,sizeof(packet.ch));
+    packet.crc = 0;
+    packet.crc = crc16_le(0, (uint8_t const *) &packet, sizeof(packet));
 }
 
 inline void process_data(Event_t &evt) {
-  if (!memcmp(evt.mac_addr,rxPeer.peer_addr, sizeof(ESP_NOW_ETH_ALEN))) {
-    RXPacket_t *rp = (RXPacket_t *) evt.data;
-    switch (rp->type){
-      case ACK:
-        if (rp->idx == packet.idx && rp->crc == packet.crc){
-          linkState = GOTACKN;
-          packAckn++;
+    if (!memcmp(evt.mac_addr,rxPeer.peer_addr, sizeof(ESPNOW_ETH_ALEN))) {
+        RXPacket_t *rp = (RXPacket_t *) evt.data;
+        switch (rp->type){
+        case ACK:
+            if (rp->idx == packet.idx && rp->crc == packet.crc){
+                linkState = GOTACKN;
+                packAckn++;
+            } else {
+                ESP_LOGE(TAG, "Ack failed: idx: %d vs %d, crc: %d vs %d, ", rp->idx , packet.idx, rp->crc , packet.crc);
+            }
+            break;
+        case TELE:
+            break;
+        default:
+            ESP_LOGE(TAG,"Incorrect RX packet type: %d",rp->type);
+            break;
         }
-        else {
-          ESP_LOGE(TAG, "Ack failed: idx: %d vs %d, crc: %d vs %d, ", rp->idx , packet.idx, rp->crc , packet.crc);
-        } 
-        break;
-      case TELE:
-        break;
-      default:
-        ESP_LOGE(TAG,"Incorrect RX packet type: %d",rp->type);
-        break;
+    } else {
+        ESP_LOGE(TAG, "Wrong packet MAC: " MACSTR, MAC2STR(evt.mac_addr));
     }
-  }
-  else {
-    ESP_LOGE(TAG, "Wrong packet MAC: " MACSTR, MAC2STR(evt.mac_addr));
-  }
 }
 
 inline void process_bind(Event_t &evt) {
-  RXPacket_t *rp = (RXPacket_t *) evt.data;
-  if (BIND == rp->type) {
-    uint16_t crc = rp->crc;
-    rp->crc = 0;
-    rp->crc = crc16_le(0, (uint8_t const *) rp, sizeof(RXPacket_t));
-    if(crc == rp->crc){
-      ESP_LOGW(TAG, "Got bind MAC: " MACSTR, MAC2STR(evt.mac_addr));
-      memcpy(rxPeer.peer_addr, evt.mac_addr, ESP_NOW_ETH_ALEN);
-      memcpy(g_model.moduleData[INTERNAL_MODULE].espnow.rx_mac_addr, rxPeer.peer_addr,  ESP_NOW_ETH_ALEN);
-      storageDirty(EE_MODEL);
+    RXPacket_t *rp = (RXPacket_t *) evt.data;
+    if (BIND == rp->type) {
+        uint16_t crc = rp->crc;
+        rp->crc = 0;
+        rp->crc = crc16_le(0, (uint8_t const *) rp, sizeof(RXPacket_t));
+        if(crc == rp->crc){
+            ESP_LOGW(TAG, "Got bind MAC: " MACSTR, MAC2STR(evt.mac_addr));
+            memcpy(rxPeer.peer_addr, evt.mac_addr, ESPNOW_ETH_ALEN);
+            memcpy(g_model.moduleData[INTERNAL_MODULE].espnow.rx_mac_addr, rxPeer.peer_addr,  ESPNOW_ETH_ALEN);
+            storageDirty(EE_MODEL);
 
-      rxPeer.channel = g_model.moduleData[INTERNAL_MODULE].espnow.ch;
-      rxPeer.ifidx = (wifi_interface_t)ESP_IF_WIFI_STA;
-      rxPeer.encrypt = false;
-      if (esp_now_is_peer_exist(rxPeer.peer_addr) == false) {
-        esp_now_add_peer(&rxPeer);
-      } else {
-        esp_now_mod_peer(&rxPeer);
-      }
-      esp_wifi_set_channel(g_model.moduleData[INTERNAL_MODULE].espnow.ch, (wifi_second_chan_t)0);
-      txState = PULSES;
+            rxPeer.channel = g_model.moduleData[INTERNAL_MODULE].espnow.ch;
+            rxPeer.ifidx = (wifi_interface_t)ESP_IF_WIFI_STA;
+            rxPeer.encrypt = false;
+            if (esp_now_is_peer_exist(rxPeer.peer_addr) == false) {
+                esp_now_add_peer(&rxPeer);
+            } else {
+                esp_now_mod_peer(&rxPeer);
+            }
+            esp_wifi_set_channel(g_model.moduleData[INTERNAL_MODULE].espnow.ch, (wifi_second_chan_t)0);
+            txState = PULSES;
+        } else {
+            ESP_LOGE(TAG,"RX packet CRC error: %d vs %d", crc, rp->crc);
+        }
+    } else {
+        ESP_LOGE(TAG,"Incorrect RX packet type: %d", rp->type);
     }
-    else {
-      ESP_LOGE(TAG,"RX packet CRC error: %d vs %d", crc, rp->crc);
-    }
-  }
-  else {
-    ESP_LOGE(TAG,"Incorrect RX packet type: %d", rp->type);
-  }
 }
 
 static void tx_task(void *pvParameter)
 {
-  Event_t evt;
-  //vTaskDelay(5000 / portTICK_RATE_MS);
-  while (pulsesON) {
-    if(xQueueReceive(evtQueue, &evt, TX_PERIOD_MS/portTICK_RATE_MS) == pdTRUE) {
-      switch (evt.id) {
-        case TX:
-            ESP_LOGD(TAG, "TX: evt.status: %d", evt.status);
-            if( ESP_NOW_SEND_SUCCESS == evt.status){
-              linkState = WAITACKN;
-              packSent++;
-            } 
-            else {
-              linkState = SENDERR;
+    Event_t evt;
+    //vTaskDelay(5000 / portTICK_RATE_MS);
+    while (pulsesON) {
+        if(xQueueReceive(evtQueue, &evt, TX_PERIOD_MS/portTICK_RATE_MS) == pdTRUE) {
+            switch (evt.id) {
+            case TX:
+                ESP_LOGD(TAG, "TX: evt.status: %d", evt.status);
+                if( ESP_NOW_SEND_SUCCESS == evt.status){
+                    linkState = WAITACKN;
+                    packSent++;
+                } else {
+                    linkState = SENDERR;
+                }
+                break;
+            case RX:
+                if ( sizeof(RXPacket_t) == evt.data_len ){
+                    switch (txState) {
+                    case PULSES:
+                        process_data(evt);
+                        break;
+                    case BIND:
+                        process_bind(evt);
+                        break;
+                    default:
+                        break;
+                    }
+                } else {
+                    ESP_LOGE(TAG,"Wrong RX packet size.");
+                }
+                free(evt.data);
+                break;
             }
-          break;
-        case RX:
-          if ( sizeof(RXPacket_t) == evt.data_len ){
+        } else {
             switch (txState) {
-              case PULSES:
-                process_data(evt);
-                break;
-              case BIND:
-                process_bind(evt);
-                break;
-              default:
+            case PULSES:
+            {
+                if(IS_BROADCAST_ADDR(rxPeer.peer_addr)) break;
+                ESP_LOGD(TAG, "Sending data packet: linkState: %d", linkState);
+                static uint64_t last_send_time = 0;
+                uint64_t curr_time = esp_timer_get_time();
+                sendPeriod = (curr_time - last_send_time)/1000;
+                last_send_time = curr_time;
+                if( linkState != QUEUED){
+                    packet_prepare();
+                    esp_err_t ret = esp_now_send(rxPeer.peer_addr, (const uint8_t *) &packet, sizeof(packet));
+                    if ( ret != ESP_OK) {
+                        ESP_LOGE(TAG, "Send txPacket error: %s", esp_err_to_name(ret));
+                    } else {
+                        linkState = QUEUED;
+                    }
+                }
                 break;
             }
-          }
-          else {
-            ESP_LOGE(TAG,"Wrong RX packet size.");
-          }
-          free(evt.data);
-          break;
-      }
-    } 
-    else {
-      switch (txState) {
-        case PULSES:
-          {
-            if(IS_BROADCAST_ADDR(rxPeer.peer_addr)) break;
-            ESP_LOGD(TAG, "Sending data packet: linkState: %d", linkState);
-            static uint64_t last_send_time = 0;
-            uint64_t curr_time = esp_timer_get_time();
-            sendPeriod = (curr_time - last_send_time)/1000;
-            last_send_time = curr_time;
-            if( linkState != QUEUED){
-              packet_prepare();
-              esp_err_t ret = esp_now_send(rxPeer.peer_addr, (const uint8_t *) &packet, sizeof(packet));
-              if ( ret != ESP_OK) {
-                ESP_LOGE(TAG, "Send txPacket error: %s", esp_err_to_name(ret));
-              } 
-              else {
-                linkState = QUEUED;
-              }
+            case BINDING:
+                if( linkState != QUEUED){
+                    ESP_LOGD(TAG, "Sending bind packet: linkState: %d", linkState);
+                    bind_packet_prepare();
+                    esp_err_t ret = esp_now_send(broadcast_mac, (const uint8_t *) &packet, sizeof(packet));
+                    if ( ret != ESP_OK) {
+                        ESP_LOGE(TAG, "Send txPacket error: %s", esp_err_to_name(ret));
+                    } else {
+                        linkState = QUEUED;
+                    }
+                }
+                break;
+            default:
+                break;
             }
-          }
-          break;
-        case BINDING:
-          if( linkState != QUEUED){
-            ESP_LOGD(TAG, "Sending bind packet: linkState: %d", linkState);
-            bind_packet_prepare();
-            esp_err_t ret = esp_now_send(broadcast_mac, (const uint8_t *) &packet, sizeof(packet));
-            if ( ret != ESP_OK) {
-                ESP_LOGE(TAG, "Send txPacket error: %s", esp_err_to_name(ret));
-            } 
-            else {
-              linkState = QUEUED;
-            }
-          }
-          break;
-        default:
-          break;
-      }
+        }
     }
-  }
-  esp_now_deinit();
-  vTaskDelay(100 / portTICK_PERIOD_MS);
-  stopWiFiESPNow();
-  vTaskDelete(NULL);
+    esp_now_deinit();
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    stopWiFiESPNow();
+    vTaskDelete(NULL);
 }
 
 static void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Event_t evt;
+    Event_t evt;
   
-  if (mac_addr == NULL) {
-    ESP_LOGE(TAG, "Send cb arg error");
-    return;
-  }
+    if (mac_addr == NULL) {
+        ESP_LOGE(TAG, "Send cb arg error");
+        return;
+    }
   
-  evt.id = TX;
-  evt.status = status;
-  if (xQueueSend(evtQueue, &evt, portMAX_DELAY) != pdTRUE) {
-    ESP_LOGE(TAG, "TX: Send queue failed.");
-  }
+    evt.id = TX;
+    evt.status = status;
+    if (xQueueSend(evtQueue, &evt, portMAX_DELAY) != pdTRUE) {
+        ESP_LOGE(TAG, "TX: Send queue failed.");
+    }
 }
 
 static void recv_cb(const esp_now_recv_info_t * esp_now_info, const uint8_t *data, int len)
@@ -238,7 +229,7 @@ static void recv_cb(const esp_now_recv_info_t * esp_now_info, const uint8_t *dat
     }
 
     evt.id = RX;
-    memcpy(evt.mac_addr, esp_now_info->src_addr, ESP_NOW_ETH_ALEN);
+    memcpy(evt.mac_addr, esp_now_info->src_addr, ESPNOW_ETH_ALEN);
     evt.data = (uint8_t *)malloc(len);
     if (evt.data == NULL) {
         ESP_LOGE(TAG, "Malloc receive data fail");
@@ -253,85 +244,85 @@ static void recv_cb(const esp_now_recv_info_t * esp_now_info, const uint8_t *dat
 }
 
 esp_err_t initTX(){
-  if (evtQueue == NULL) {
-    evtQueue = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(Event_t));
     if (evtQueue == NULL) {
-      ESP_LOGE(TAG, "Create queue failed.");
-      return ESP_FAIL;
+        evtQueue = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(Event_t));
+        if (evtQueue == NULL) {
+            ESP_LOGE(TAG, "Create queue failed.");
+            return ESP_FAIL;
+        }
     }
-  }
   
-  if(xPulsesQueue == NULL) {
-    xPulsesQueue=xQueueCreate( 1, sizeof( locChannelOutputs ) );
-    if(NULL == xPulsesQueue){
-        ESP_LOGE(TAG, "Failed to create queue: xPulsesQueue!");
+    if(xPulsesQueue == NULL) {
+        xPulsesQueue=xQueueCreate( 1, sizeof( locChannelOutputs ) );
+        if(NULL == xPulsesQueue){
+            ESP_LOGE(TAG, "Failed to create queue: xPulsesQueue!");
+        }
     }
-  }
-  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_init());
-  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_register_send_cb(send_cb));
-  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_register_recv_cb(recv_cb));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_init());
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_register_send_cb(send_cb));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_register_recv_cb(recv_cb));
   
-  rxPeer.ifidx = (wifi_interface_t)ESP_IF_WIFI_STA;
-  rxPeer.encrypt = false;
-  memcpy(rxPeer.peer_addr, broadcast_mac, ESP_NOW_ETH_ALEN);
-  rxPeer.channel = BIND_CH;
-  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_add_peer(&rxPeer));
-  rxPeer.channel = g_model.moduleData[INTERNAL_MODULE].espnow.ch;
-  memcpy(rxPeer.peer_addr, g_model.moduleData[INTERNAL_MODULE].espnow.rx_mac_addr, ESP_NOW_ETH_ALEN);
-  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_add_peer(&rxPeer));
+    rxPeer.ifidx = (wifi_interface_t)ESP_IF_WIFI_STA;
+    rxPeer.encrypt = false;
+    memcpy(rxPeer.peer_addr, broadcast_mac, ESPNOW_ETH_ALEN);
+    rxPeer.channel = BIND_CH;
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_add_peer(&rxPeer));
+    rxPeer.channel = g_model.moduleData[INTERNAL_MODULE].espnow.ch;
+    memcpy(rxPeer.peer_addr, g_model.moduleData[INTERNAL_MODULE].espnow.rx_mac_addr, ESPNOW_ETH_ALEN);
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_add_peer(&rxPeer));
 
-  linkState = IDLE;
-  pulsesON = true;
-  txState = PULSES;
-  if (NULL == xTaskCreateStaticPinnedToCore(tx_task, "tx_task", ESPNOW_STACK_SIZE, NULL, ESP_TASK_PRIO_MAX-6, espnow_stack, &espnowTaskBuffer, PULSES_TASK_CORE)) {
-    ESP_LOGE(TAG, "Failed to create tx_task");
-  }
-  return ESP_OK;
+    linkState = IDLE;
+    pulsesON = true;
+    txState = PULSES;
+    if (NULL == xTaskCreateStaticPinnedToCore(tx_task, "tx_task", ESPNOW_STACK_SIZE, NULL, ESP_TASK_PRIO_MAX-6, espnow_stack, &espnowTaskBuffer, PULSES_TASK_CORE)) {
+        ESP_LOGE(TAG, "Failed to create tx_task");
+    }
+    return ESP_OK;
 }
 
 void pause_espnow(){
-  ESP_LOGI(TAG, "Pause ESP-NOW");
-  txState = PAUSED;
+    ESP_LOGI(TAG, "Pause ESP-NOW");
+    txState = PAUSED;
 }
 
 void init_bind_espnow(){
-  ESP_LOGI(TAG, "ESP-NOW init binding.");
-  esp_wifi_set_channel(BIND_CH, (wifi_second_chan_t)WIFI_SECOND_CHAN_NONE);
-  txState = BINDING;
+    ESP_LOGI(TAG, "ESP-NOW init binding.");
+    esp_wifi_set_channel(BIND_CH, (wifi_second_chan_t)WIFI_SECOND_CHAN_NONE);
+    txState = BINDING;
 }
 
 void stop_bind_espnow(){
-  ESP_LOGI(TAG, "ESP-NOW stop binding.");
-  esp_wifi_set_channel(g_model.moduleData[INTERNAL_MODULE].espnow.ch, (wifi_second_chan_t)0);
-  txState = PULSES;
+    ESP_LOGI(TAG, "ESP-NOW stop binding.");
+    esp_wifi_set_channel(g_model.moduleData[INTERNAL_MODULE].espnow.ch, (wifi_second_chan_t)0);
+    txState = PULSES;
 }
 
 bool is_binding_espnow(){
-  return BINDING == txState;
+    return BINDING == txState;
 }
 
 void resume_espnow(){
-  ESP_LOGI(TAG, "Resume ESP-NOW");
-  txState = PULSES;
+    ESP_LOGI(TAG, "Resume ESP-NOW");
+    txState = PULSES;
 }
 
 void init_espnow()
 {
-  ESP_LOGI(TAG, "init_espnow");
-  startWiFiESPNow();
-  initTX();
+    ESP_LOGI(TAG, "init_espnow");
+    startWiFiESPNow();
+    initTX();
 }
 
 static void* espNowInit(uint8_t module)
 {
-  (void)module;
-  init_espnow();
-  return 0;
+    (void)module;
+    init_espnow();
+    return (void *)1;
 }
 
 static void espNowDeInit(void* context)
 {
-  pulsesON = false;
+    pulsesON = false;
 }
 
 static void espNowSetupPulses(void* context, int16_t* channels, uint8_t nChannels)
@@ -339,38 +330,36 @@ static void espNowSetupPulses(void* context, int16_t* channels, uint8_t nChannel
   // nothing to do
 }
 
-static void espNowSendPulses(void* context)
+static void espNowSendPulses(void* context, uint8_t* buffer, int16_t* channels, uint8_t nChannels)
 {
-  if (xPulsesQueue){
-    xQueueOverwrite( xPulsesQueue, channelOutputs );
-  }
+    if (xPulsesQueue){
+        xQueueOverwrite( xPulsesQueue, channelOutputs );
+    }
 }
 
 static int espNowGetByte(void* context, uint8_t* data)
 {
 #if 0
-  return IntmoduleSerialDriver.getByte(context, data);
+    return IntmoduleSerialDriver.getByte(context, data);
 #endif
-return 0;
+    return 0;
 }
 
 static void espNowProcessData(void* context, uint8_t data, uint8_t* buffer, uint8_t* len)
 {
 #if 0
-  processMultiTelemetryData(data, INTERNAL_MODULE);
+    processMultiTelemetryData(data, INTERNAL_MODULE);
 #endif
 }
 
 #include "hal/module_driver.h"
 
-const etx_module_driver_t EspNowDriver = {
-#if 0 // TODO-MUFFIN 
-  .protocol = PROTOCOL_CHANNELS_ESPNOW,
-  .init = espNowInit,
-  .deinit = espNowDeInit,
-  .setupPulses = espNowSetupPulses,
-  .sendPulses = espNowSendPulses,
-  .getByte = espNowGetByte,
-  .processData = espNowProcessData,
-#endif
+const etx_proto_driver_t EspNowDriver = {
+    .protocol = PROTOCOL_CHANNELS_ESPNOW,
+    .init = espNowInit,
+    .deinit = espNowDeInit,
+    //.setupPulses = espNowSetupPulses,
+    .sendPulses = espNowSendPulses,
+    //.getByte = espNowGetByte,
+    //.processData = espNowProcessData,
 };

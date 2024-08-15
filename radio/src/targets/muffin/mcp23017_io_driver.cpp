@@ -131,6 +131,10 @@ void EXTERNAL_MODULE_OFF(void) {
     mcp_set_gpio(MCP_EXTMOD_5V_EN, 0);
 }
 
+void internal_protocol_led_on(bool on) {
+    mcp_set_gpio(MCP_INTERNAL_PROTO_LED, on);
+}
+
 void pwrOff()
 {
     TRACE("Power off");
@@ -143,4 +147,8 @@ void pwrOff()
 bool pwrPressed()
 {
   return (0 != (ShadowInput & MCP_PWR_SW_DET));
+}
+
+bool pwrOffPressed() {
+    return !pwrPressed(); // Muffin uses switch for power    
 }

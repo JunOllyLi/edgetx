@@ -91,7 +91,7 @@ static esp_err_t create_tcp_server()
     }
     struct sockaddr_in client_addr;
     unsigned int socklen = sizeof(client_addr);
-    connect_socket = accept(server_socket, (struct sockaddr *)&client_addr, &socklen);
+    connect_socket = accept(server_socket, (struct sockaddr *)&client_addr, (socklen_t *)&socklen);
     if (connect_socket < 0) {
         show_socket_error_reason("accept_server", connect_socket);
         close(server_socket);
@@ -126,7 +126,7 @@ void ota_server_start()
     int content_length = -1;
     int content_received = 0;
 
-    esp_ota_handle_t ota_handle = NULL;
+    esp_ota_handle_t ota_handle = 0;
     do {
         recv_len = recv(connect_socket, ota_buff, OTA_BUFF_SIZE, 0);
         if (recv_len > 0) {
@@ -157,7 +157,7 @@ void ota_server_start()
     } while (recv_len > 0 && content_received < content_length);
 
     ESP_LOGI(TAG, "Binary transferred finished: %d bytes", content_received);
-    if( NULL != ota_handle){
+    if( 0 != ota_handle){
         err = esp_ota_end(ota_handle);
         if(ESP_OK == err){
             err = esp_ota_set_boot_partition(update_partition);

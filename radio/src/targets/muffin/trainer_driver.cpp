@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 #include "esp32_rmt_rx.h"
-
+#if 0
 static rmt_ctx_t* rmt_send = NULL;
 static rmt_ctx_t* rmt_recv = NULL;
 
@@ -104,6 +104,7 @@ int sbusGetByte(uint8_t * byte)
 }
 #endif
 
+#endif
 
 bool trainer_dsc_available() { return true; }
 void trainer_init_dsc_out() {}

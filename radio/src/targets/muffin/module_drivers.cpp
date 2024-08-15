@@ -36,13 +36,13 @@ static const etx_esp32_uart_hw_def_t intmod_uart_hw_def = {
 };
 
 const etx_module_port_t _internal_ports[] = {
-  {
-    .port = ETX_MOD_PORT_UART,
-    .type = ETX_MOD_TYPE_SERIAL,
-    .dir_flags = ETX_MOD_DIR_TX_RX | ETX_MOD_FULL_DUPLEX,
-    .drv = { .serial = &ESPUartSerialDriver },
-    .hw_def = (void *)&intmod_uart_hw_def,
-  },
+    {
+        .port = ETX_MOD_PORT_UART,
+        .type = ETX_MOD_TYPE_SERIAL,
+        .dir_flags = ETX_MOD_DIR_TX_RX | ETX_MOD_FULL_DUPLEX,
+        .drv = { .serial = &ESPUartSerialDriver },
+        .hw_def = (void *)&intmod_uart_hw_def,
+    },
 };
 
 static void _set_internal_module_power(uint8_t on) {
@@ -54,10 +54,10 @@ static void _set_internal_module_power(uint8_t on) {
 }
 
 static const etx_module_t _internal_module = {
-  .ports = _internal_ports,
-  .set_pwr = _set_internal_module_power,
-  .set_bootcmd = nullptr,
-  .n_ports = DIM(_internal_ports),
+    .ports = _internal_ports,
+    .set_pwr = _set_internal_module_power,
+    .set_bootcmd = nullptr,
+    .n_ports = DIM(_internal_ports),
 };
 #endif
 
@@ -131,32 +131,37 @@ const etx_module_port_t _external_ports[] = {
 };
 
 static void _set_external_module_power(uint8_t on) {
-    if (on) {
-        EXTERNAL_MODULE_ON();
+    if ((MODULE_TYPE_ESPNOW != g_model.moduleData[EXTERNAL_MODULE].type) &&
+            (MODULE_TYPE_BT_POWERUP != g_model.moduleData[EXTERNAL_MODULE].type)) {
+        if (on) {
+            EXTERNAL_MODULE_ON();
+        } else {
+            EXTERNAL_MODULE_OFF();
+        }
     } else {
-        EXTERNAL_MODULE_OFF();
+        internal_protocol_led_on(on);
     }
 }
 
 static const etx_module_t _external_module = {
-  .ports = _external_ports,
-  .set_pwr = _set_external_module_power,
-  .set_bootcmd = nullptr,
-  .n_ports = DIM(_external_ports),
+    .ports = _external_ports,
+    .set_pwr = _set_external_module_power,
+    .set_bootcmd = nullptr,
+    .n_ports = DIM(_external_ports),
 };
 #endif
 
 
 BEGIN_MODULES()
 #if defined(HARDWARE_INTERNAL_MODULE)
-  &_internal_module,
+    &_internal_module,
 #else
-  nullptr,
+    nullptr,
 #endif
 #if defined(HARDWARE_EXTERNAL_MODULE)
-  &_external_module,
+    &_external_module,
 #else
-  nullptr,
+    nullptr,
 #endif
 END_MODULES()
 

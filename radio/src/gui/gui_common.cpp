@@ -744,12 +744,8 @@ bool isModuleUsingSport(uint8_t moduleBay, uint8_t moduleType)
     case MODULE_TYPE_NONE:
     case MODULE_TYPE_SBUS:
     case MODULE_TYPE_PPM:
-#if defined(MODULE_TYPE_ESPNOW)
     case MODULE_TYPE_ESPNOW:
-#endif
-#if defined(MODULE_TYPE_BT_POWERUP)
     case MODULE_TYPE_BT_POWERUP:
-#endif
     case MODULE_TYPE_DSM2:
     case MODULE_TYPE_MULTIMODULE:
     case MODULE_TYPE_ISRM_PXX2:
@@ -831,12 +827,9 @@ bool isInternalModuleAvailable(int moduleType)
 
   if (moduleType == MODULE_TYPE_NONE)
     return true;
-#if defined(PCB_MUFFIN)
-  return isInternalModuleSupported(moduleType);
-#else
+
   if (g_eeGeneral.internalModule != moduleType)
     return false;
-#endif
 
 #if defined(INTERNAL_MODULE_PXX1) && defined(HARDWARE_EXTERNAL_MODULE)
   if ((moduleType == MODULE_TYPE_XJT_PXX1) &&
@@ -970,6 +963,16 @@ bool isExternalModuleAvailable(int moduleType)
   
 #if !defined(AFHDS3)
   if (moduleType == MODULE_TYPE_FLYSKY_AFHDS3)
+    return false;
+#endif
+
+#if !defined(ESPNOW)
+  if (moduleType == MODULE_TYPE_ESPNOW)
+    return false;
+#endif
+
+#if !defined(BT_POWERUP)
+  if (moduleType == MODULE_TYPE_BT_POWERUP)
     return false;
 #endif
 

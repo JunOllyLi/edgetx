@@ -27,7 +27,7 @@ EXT_RAM_BSS_ATTR static uint8_t oled_buf[OLED_W * OLED_H] = {0};
 void toplcdInit()
 {
 #ifdef ENABLE_SH1107
-  sh1107_init();
+    sh1107_init();
 #endif
 }
 #if 0
@@ -66,10 +66,10 @@ void setTopSecondTimer(uint32_t value)
 void toplcdRefreshStart()
 {
 #ifdef ENABLE_SH1107
-  const lv_area_t area = {
-    .x1 = 0, .y1 = 0, .x2 = OLED_W - 1, .y2 = OLED_H - 1
-  };
-  sh1107_flush(NULL, &area, (lv_color_t *)oled_buf);
+    const lv_area_t area = {
+        .x1 = 0, .y1 = 0, .x2 = OLED_W - 1, .y2 = OLED_H - 1
+    };
+    sh1107_flush(NULL, &area, (lv_color_t *)oled_buf);
 #endif
 }
 

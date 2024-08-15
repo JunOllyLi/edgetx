@@ -52,61 +52,59 @@ void audioInit() {
 }
 
 void setSampleRate(uint32_t frequency) {
-  const i2s_std_clk_config_t clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(frequency);
+    const i2s_std_clk_config_t clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(frequency);
 
-  i2s_channel_disable(tx_chan);
-  i2s_channel_reconfig_std_clock(tx_chan, &clk_cfg);
-  i2s_channel_enable(tx_chan);
+    i2s_channel_disable(tx_chan);
+    i2s_channel_reconfig_std_clock(tx_chan, &clk_cfg);
+    i2s_channel_enable(tx_chan);
 }
 
-uint8_t * currentBuffer = nullptr;
-uint32_t currentSize = 0;
-int16_t newVolume = -1;
+static uint8_t * currentBuffer = nullptr;
+static uint32_t currentSize = 0;
 
 void audioSetCurrentBuffer(const AudioBuffer * buffer)
 {
-  if (buffer) {
-    currentBuffer = (uint8_t *)buffer->data;
-    currentSize = buffer->size * 2;
-  }
-  else {
-    currentBuffer = nullptr;
-    currentSize = 0;
-  }
+    if (buffer) {
+        currentBuffer = (uint8_t *)buffer->data;
+        currentSize = buffer->size * 2;
+    } else {
+        currentBuffer = nullptr;
+        currentSize = 0;
+    }
 }
 
 static bool channel_enabled = true;
 
 void audioConsumeCurrentBuffer() {
-  if (!currentBuffer) {
-    audioSetCurrentBuffer(audioQueue.buffersFifo.getNextFilledBuffer());
-  }
-
-  static size_t last = 0U;
-  if ((NULL == currentBuffer) && (0U != last)) {
-    // end of transfer?
-    last = 0U;
-    i2s_channel_disable(tx_chan);
-    channel_enabled = false;
-  }
-  while (currentBuffer && currentSize) {
-    if (!channel_enabled) {
-      channel_enabled = true;
-      i2s_channel_enable(tx_chan);
+    if (!currentBuffer) {
+        audioSetCurrentBuffer(audioQueue.buffersFifo.getNextFilledBuffer());
     }
 
-    size_t written = 0U;
-    i2s_channel_write(tx_chan, currentBuffer, currentSize, &written, 1000);
-    last = written;
-
-    if (written > currentSize) written = currentSize;
-
-    currentBuffer += written;
-    currentSize -= written;
-    if (currentSize == 0) {
-      audioQueue.buffersFifo.freeNextFilledBuffer();
-      currentBuffer = nullptr;
-      currentSize = 0;
+    static size_t last = 0U;
+    if ((NULL == currentBuffer) && (0U != last)) {
+        // end of transfer?
+        last = 0U;
+        i2s_channel_disable(tx_chan);
+        channel_enabled = false;
     }
-  }
+    while (currentBuffer && currentSize) {
+        if (!channel_enabled) {
+            channel_enabled = true;
+            i2s_channel_enable(tx_chan);
+        }
+
+        size_t written = 0U;
+        i2s_channel_write(tx_chan, currentBuffer, currentSize, &written, 1000);
+        last = written;
+
+        if (written > currentSize) written = currentSize;
+
+        currentBuffer += written;
+        currentSize -= written;
+        if (currentSize == 0) {
+            audioQueue.buffersFifo.freeNextFilledBuffer();
+            currentBuffer = nullptr;
+            currentSize = 0;
+        }
+    }
 }

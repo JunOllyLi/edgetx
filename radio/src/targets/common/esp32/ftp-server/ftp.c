@@ -247,7 +247,7 @@ static void ftp_close_filesystem_on_error (void)
 static ftp_result_t ftp_read_file (char *filebuf, uint32_t desiredsize, uint32_t *actualsize)
 {
     ftp_result_t result = E_FTP_RESULT_CONTINUE;
-    if (FR_OK != f_read(&ftp_data.fp, filebuf, desiredsize, actualsize)) {
+    if (FR_OK != f_read(&ftp_data.fp, filebuf, desiredsize, (UINT *)actualsize)) {
         ftp_close_files_dir();
         result = E_FTP_RESULT_FAILED;
     } else if (*actualsize < desiredsize) {
@@ -262,7 +262,7 @@ static ftp_result_t ftp_write_file (char *filebuf, uint32_t size)
 {
     ftp_result_t result = E_FTP_RESULT_FAILED;
     uint32_t actualsize = 0;
-    UINT res = f_write(&ftp_data.fp, filebuf, size, &actualsize);
+    UINT res = f_write(&ftp_data.fp, filebuf, size, (UINT *)&actualsize);
     if ((FR_OK == res) && (actualsize == size)) {
         result = E_FTP_RESULT_OK;
     } else {
@@ -340,6 +340,7 @@ static int ftp_get_eplf_item (char *dest, uint32_t destsize, FILINFO *fno)
     return addsize;
 }
 
+#if 0 // not used
 //---------------------------------------------------------------------------
 static int ftp_get_eplf_drive (char *dest, uint32_t destsize, char *name)
 {
@@ -353,6 +354,7 @@ static int ftp_get_eplf_drive (char *dest, uint32_t destsize, char *name)
 
     return snprintf(dest, destsize, "%srw-rw-rw-   1 root  root %9u %s %s\r\n", type, 0, str_time, name);
 }
+#endif
 
 //--------------------------------------------------------------------------------------
 static ftp_result_t ftp_list_dir(char *list, uint32_t maxlistsize, uint32_t *listsize)
@@ -630,7 +632,6 @@ static ftp_result_t ftp_recv_non_blocking (int32_t sd, void *buff, int32_t Maxle
 //-----------------------------------
 static void ftp_fix_path(char *pwd)
 {
-    char ph_path[ALLOC_PATH_MAX];
     uint len = strlen(pwd);
     ESP_LOGD(FTP_TAG,"ftp_fix_path: pwd: '%s'",pwd);
     if (len == 0) {
@@ -771,7 +772,6 @@ static void ftp_process_cmd (void)
     char *bufptr = (char *)ftp_cmd_buffer;
     ftp_result_t result;
     struct stat buf;
-    int res;
     FILINFO fino ={0};
 
     memset(bufptr, 0, FTP_MAX_PARAM_SIZE + FTP_CMD_SIZE_MAX);

@@ -826,14 +826,14 @@ LEGACY_NAMES = [
                 "description": "Rudder"
             },
             "LV": {
-                "yaml": "Ele",
-                "lua": "ele",
-                "description": "Elevator"
-            },
-            "RV": {
                 "yaml": "Thr",
                 "lua": "thr",
                 "description": "Throttle"
+            },
+            "RV": {
+                "yaml": "Ele",
+                "lua": "ele",
+                "description": "Elevator"
             },
             "RH": {
                 "yaml": "Ail",

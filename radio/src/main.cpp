@@ -667,6 +667,10 @@ void perMain()
   toplcdRefreshEnd();
 #endif
 
+#if defined(PCB_MUFFIN)
+  toplcdRefresh();
+#endif
+
 #if defined(INTERNAL_GPS)
   gpsWakeup();
 #endif

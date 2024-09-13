@@ -119,7 +119,7 @@ void boardInit()
         TRACE_ERROR("Flysky Hall Gimbal NOT detected");
     }
 
-    //toplcdInit();
+    toplcdInit();
 }
 
 void boardOff()

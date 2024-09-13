@@ -35,7 +35,7 @@ add_definitions(-DREQUIRED_SDCARD_VERSION="${SDCARD_VERSION}")
 add_definitions(-DLUA_INPUTS -DTIMERS -DSOFTWARE_VOLUME)
 add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
 
-option(INTERNAL_MODULE_MULTI "Support for MULTI internal module" OFF)
+option(INTERNAL_MODULE_MULTI "Support for MULTI internal module" ON)
 option(INTERNAL_MODULE_ELRS "Support for CRSF internal module" ON)
 option(INTERNAL_MODULE_PPM "Support for PPM internal module" OFF)
 option(INTERNAL_MODULE_ESPNOW "Support for ESPNOW internal module" OFF)
@@ -50,8 +50,7 @@ include(${RADIO_SRC_DIR}/targets/common/esp32/CMakeLists.txt)
 
 set(TARGET_SRC
   ${TARGET_SRC}
-  top_lcd_driver.cpp
-  sh1107.cpp
+  sh1107_top_lcd.cpp
   trainer_driver.cpp
   lcd_lvgl_esp.cpp
   backlight_driver.cpp

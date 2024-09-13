@@ -12,15 +12,15 @@ static const mcp_switch_t _switch_defs[] = {
   {
     .name = "{{ switch.name }}",
     .bit_high = 0,
-    .bit_low = (1 << (({{ switch.gpio }} * 8) + {{ switch.pin }})),
+    .bit_low = (1 << ((({{ switch.gpio }} - 1) * 8) + {{ switch.pin }})),
     .type = SWITCH_HW_2POS,
     .flags = {{ 'SWITCH_HW_INVERTED' if switch.inverted else 0 }}
   },
   {% elif switch.type == '3POS' %}
   {
     .name = "{{ switch.name }}",
-    .bit_high = (1 << (({{ switch.gpio_high }} * 8) + {{ switch.pin_high }})),
-    .bit_low  = (1 << (({{ switch.gpio_low }} * 8) + {{ switch.pin_low }})),
+    .bit_high = (1 << ((({{ switch.gpio_high }} - 1) * 8) + {{ switch.pin_high }})),
+    .bit_low  = (1 << ((({{ switch.gpio_low }} - 1)* 8) + {{ switch.pin_low }})),
     .type = SWITCH_HW_3POS,
     .flags = {{ 'SWITCH_HW_INVERTED' if switch.inverted else 0 }}
   },

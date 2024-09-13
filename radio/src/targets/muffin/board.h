@@ -50,24 +50,29 @@ void boardOff();
 
 /*
 From Kconfig
-  LCD D0 - D7: 21, 14, 13, 12, 11, 10, 9, 46
-  LCD CS 45
-  LCD DC 48
-  LCD WR 47
+  LCD D0 - D7: 10, 11, 12, 13, 14, 21, 47, 48
+  LCD CS 3
+  LCD DC 46
+  LCD WR 9
+
+#define I2C_SCL 7
+#define I2C_SDA 6
 
 //  MOSI -1
 //  MISO -1
 //  RESET -1
 //  SCLK -1
 //  TOUCH CS -1
-//
+//  TOUCH IRQ 38
 */
+
 #define TOUCH_IRQ GPIO_NUM_38
 
-#define I2C_0_SCL GPIO_NUM_7
-#define I2C_0_SDA GPIO_NUM_6
+#define I2C_MASTER_NUM I2C_NUM_0
+#define I2C_0_SCL GPIO_NUM_40
+#define I2C_0_SDA GPIO_NUM_39
 
-#define BACKLITE_PIN GPIO_NUM_3
+#define BACKLITE_PIN GPIO_NUM_45
 
 #define USE_RMT -1
 #if CONFIG_ESP_CONSOLE_UART_NUM == 0
@@ -80,25 +85,23 @@ From Kconfig
 #define INTMOD_UART_PORT UART_NUM_2
 #endif
 
-#define FLYSKY_UART_RX_PIN GPIO_NUM_4  // GIMBLE_TX
-#define FLYSKY_UART_TX_PIN GPIO_NUM_5  // GIMBLE_RX
+#define FLYSKY_UART_RX_PIN GPIO_NUM_41  // GIMBLE_TX
+#define FLYSKY_UART_TX_PIN GPIO_NUM_42  // GIMBLE_RX
 
 #define INTMOD_ESP_UART_TX GPIO_NUM_2 // INTMOD_RX
 #define INTMOD_ESP_UART_RX GPIO_NUM_1 // INTMOD_TX
 
-#define EXTMOD_UART_TX GPIO_NUM_8  // EXTMOD_RX
-#define EXTMOD_UART_RX GPIO_NUM_15 // EXTMOD_TX
-
-#define I2C_MASTER_NUM I2C_NUM_0
+#define EXTMOD_UART_TX GPIO_NUM_15  // EXTMOD_RX
+#define EXTMOD_UART_RX GPIO_NUM_8   // EXTMOD_TX
 
 #define SD_DEDICATED_SPI
 #ifdef SD_DEDICATED_SPI
 #define SD_SPI_HOST SPI2_HOST
-#define SDSPI_CLK GPIO_NUM_40
-#define SDSPI_MOSI GPIO_NUM_41
-#define SDSPI_MISO GPIO_NUM_39
+#define SDSPI_CLK GPIO_NUM_5
+#define SDSPI_MOSI GPIO_NUM_6
+#define SDSPI_MISO GPIO_NUM_4
 #endif
-#define SDCARD_CS_GPIO GPIO_NUM_42
+#define SDCARD_CS_GPIO GPIO_NUM_7
 
 #define I2S_DOUT GPIO_NUM_16
 #define I2S_BCLK GPIO_NUM_17
@@ -168,14 +171,7 @@ void lcdOff();
 
 // Top LCD driver
 void toplcdInit();
-void toplcdOff();
-void toplcdRefreshStart();
-void toplcdRefreshEnd();
-void setTopFirstTimer(int32_t value);
-void setTopSecondTimer(uint32_t value);
-void setTopRssi(uint32_t rssi);
-void setTopBatteryState(int state, uint8_t blinking);
-void setTopBatteryValue(uint32_t volts);
+void toplcdRefresh();
 
 #if defined(CROSSFIRE)
 #define TELEMETRY_FIFO_SIZE             128

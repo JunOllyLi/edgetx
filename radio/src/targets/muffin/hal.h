@@ -70,47 +70,48 @@
 
 
 // For MCP23017 based GPIO extension:
-//    REG for the port, 0 - G0Ax, 1 - G0Bx, 2 - G1Ax, 3 - G1Bx
+//  The REG is not zero-indexed since REG=0 causes some issue
+//    REG for the port, 1 - G0Ax, 2 - G0Bx, 3 - G1Ax, 4 - G1Bx
 //    PIN for the pin num in the port
-#define KEYS_GPIO_REG_DOWN           0
-#define KEYS_GPIO_PIN_DOWN           0
-#define KEYS_GPIO_REG_UP             0
-#define KEYS_GPIO_PIN_UP             1
-#define KEYS_GPIO_REG_EXIT           0
-#define KEYS_GPIO_PIN_EXIT           2
+#define KEYS_GPIO_REG_DOWN           3
+#define KEYS_GPIO_PIN_DOWN           1
+#define KEYS_GPIO_REG_UP             3
+#define KEYS_GPIO_PIN_UP             3
+#define KEYS_GPIO_REG_EXIT           2
+#define KEYS_GPIO_PIN_EXIT           6
 
-#define KEYS_GPIO_REG_ENTER          1
-#define KEYS_GPIO_PIN_ENTER          1
+#define KEYS_GPIO_REG_ENTER          2
+#define KEYS_GPIO_PIN_ENTER          4
 
 #define KEYS_GPIO_REG_MDL            3
 #define KEYS_GPIO_PIN_MDL            0
 
-#define TRIMS_GPIO_REG_LVU           2
+#define TRIMS_GPIO_REG_LHR           3
+#define TRIMS_GPIO_PIN_LHR           6
+#define TRIMS_GPIO_REG_LHL           3
+#define TRIMS_GPIO_PIN_LHL           5
+#define TRIMS_GPIO_REG_LVU           1
 #define TRIMS_GPIO_PIN_LVU           6
-#define TRIMS_GPIO_REG_LVD           2
+#define TRIMS_GPIO_REG_LVD           1
 #define TRIMS_GPIO_PIN_LVD           7
 #define TRIMS_GPIO_REG_RHR           2
-#define TRIMS_GPIO_PIN_RHR           2
+#define TRIMS_GPIO_PIN_RHR           1
 #define TRIMS_GPIO_REG_RHL           2
-#define TRIMS_GPIO_PIN_RHL           3
-#define TRIMS_GPIO_REG_RVU           2
+#define TRIMS_GPIO_PIN_RHL           0
+#define TRIMS_GPIO_REG_RVU           1
 #define TRIMS_GPIO_PIN_RVU           5
-#define TRIMS_GPIO_REG_RVD           2
+#define TRIMS_GPIO_REG_RVD           1
 #define TRIMS_GPIO_PIN_RVD           4
-#define TRIMS_GPIO_REG_LHR           2
-#define TRIMS_GPIO_PIN_LHR           0
-#define TRIMS_GPIO_REG_LHL           2
-#define TRIMS_GPIO_PIN_LHL           1
 
-#define SWITCHES_GPIO_REG_A          0
-#define SWITCHES_GPIO_PIN_A          3
-#define SWITCHES_GPIO_REG_B          0
-#define SWITCHES_GPIO_PIN_B          5
-#define SWITCHES_GPIO_REG_C_L        0
-#define SWITCHES_GPIO_PIN_C_L        7
-#define SWITCHES_GPIO_REG_C_H        0
-#define SWITCHES_GPIO_PIN_C_H        6
-#define SWITCHES_GPIO_REG_D          1
-#define SWITCHES_GPIO_PIN_D          0
+#define SWITCHES_GPIO_REG_A          3
+#define SWITCHES_GPIO_PIN_A          4
+#define SWITCHES_GPIO_REG_B          3
+#define SWITCHES_GPIO_PIN_B          2
+#define SWITCHES_GPIO_REG_C_L        2
+#define SWITCHES_GPIO_PIN_C_L        3
+#define SWITCHES_GPIO_REG_C_H        2
+#define SWITCHES_GPIO_PIN_C_H        2
+#define SWITCHES_GPIO_REG_D          2
+#define SWITCHES_GPIO_PIN_D          5
 
 #endif // _HAL_H_

@@ -138,7 +138,9 @@ static void _set_external_module_power(uint8_t on) {
         } else {
             EXTERNAL_MODULE_OFF();
         }
+        internal_protocol_led_on(0);
     } else {
+        EXTERNAL_MODULE_OFF();
         internal_protocol_led_on(on);
     }
 }

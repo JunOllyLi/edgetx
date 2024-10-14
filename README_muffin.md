@@ -16,3 +16,8 @@ The PCB design is in https://github.com/JunOllyLi/TX_PCB.git
 + Latest code uses `ESP-IDF v5.3` for the build.
 + To build the software, go to `<root_of_src>/radio/src/targets/muffin/esp32_build` and type `idf.py build`
 
+### Credit
+Some of the code used other's open source code directly:
++ ESP32 WiFI ftp-server code came from https://github.com/tmrttmrt/opentx.git
++ Initial EPSNOW code came from https://github.com/tmrttmrt/opentx-espnow-rx.git
+
